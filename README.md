@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://mockoon.com" alt="mockoon logo">
-    <img width="200" height="200" src="https://mockoon.com/images/logo-square-commons.png">
+    <img width="200" height="200" src="https://mockoon.com/images/logo-square-commons-server.png">
   </a>
   <br>
   <a href="https://mockoon.com/#download"><img src="https://img.shields.io/badge/Download%20app-Go-green.svg?style=flat-square&colorB=1997c6"/></a>
@@ -10,10 +10,10 @@
   <a href="https://discord.gg/MutRpsY5gE"><img src="https://img.shields.io/badge/Discord-go-blue.svg?style=flat-square&colorA=6c84d9&colorB=1da1f2"/></a>
   <br>
   <br>
-  <h1>@Mockoon/commons</h1>
+  <h1>@Mockoon/commons-server</h1>
 </div>
 
-Mockoon's Commons library regroups Mockoon's shared code used in the [main application](https://github.com/mockoon/mockoon) and the [CLI](https://github.com/mockoon/cli).
+Mockoon's Commons server library regroups Mockoon's shared code used in the [main application](https://github.com/mockoon/mockoon) and the [CLI](https://github.com/mockoon/cli). It contains mostly "server side" code designed to be used in a Node.js environments.
 
 ---
 
@@ -23,9 +23,9 @@ You can discuss all things related to Mockoon, and ask for help, on the [main ap
 
 ## Contributing
 
-If you are interested in contributing to Mockoon, please take a look at the main [contributing guidelines](https://github.com/mockoon/mockoon/blob/master/CONTRIBUTING.md) and the [ones specific to this repository](https://github.com/mockoon/commons/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to Mockoon, please take a look at the main [contributing guidelines](https://github.com/mockoon/mockoon/blob/master/CONTRIBUTING.md) and the [ones specific to this repository](https://github.com/mockoon/commons-server/blob/main/CONTRIBUTING.md).
 
-Please also take a look at our [Code of Conduct](https://github.com/mockoon/commons/blob/main/CODE_OF_CONDUCT.md).
+Please also take a look at our [Code of Conduct](https://github.com/mockoon/commons-server/blob/main/CODE_OF_CONDUCT.md).
 
 ## Documentation
 
