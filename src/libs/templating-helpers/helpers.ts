@@ -64,7 +64,7 @@ export const Helpers = {
   },
   // return one random item
   oneOf: function (itemList: string[]) {
-    return itemList[RandomInt(0, itemList.length)];
+    return itemList[RandomInt(0, itemList.length - 1)];
   },
   // return some random item as an array (to be used in triple braces) or as a string
   someOf: function (
