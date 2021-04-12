@@ -2,6 +2,7 @@
 declare namespace Express {
   export interface Request {
     proxied: boolean;
+    rawBody: Buffer;
     bodyForm: any;
     bodyJSON: any;
   }

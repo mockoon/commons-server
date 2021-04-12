@@ -189,14 +189,16 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
       'Content-Type'
     );
 
-    request.setEncoding('utf8');
-    request.body = '';
+    const rawBody: Buffer[] = [];
 
     request.on('data', (chunk) => {
-      request.body += chunk;
+      rawBody.push(Buffer.from(chunk, 'binary'));
     });
 
     request.on('end', () => {
+      request.rawBody = Buffer.concat(rawBody);
+      request.body = request.rawBody.toString('utf8');
+
       try {
         if (requestContentType) {
           if (requestContentType.includes('application/json')) {
@@ -204,7 +206,9 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
           } else if (
             requestContentType.includes('application/x-www-form-urlencoded')
           ) {
-            request.bodyForm = qsParse(request.body, { depth: 10 });
+            request.bodyForm = qsParse(request.body, {
+              depth: 10
+            });
           }
         }
       } catch (error) {
@@ -479,14 +483,9 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
               request
             );
 
-            if (request.body) {
-              proxyReq.setHeader(
-                'Content-Length',
-                Buffer.byteLength(request.body)
-              );
-
-              // re-stream the body (intercepted by body parser method) and mark as proxied
-              proxyReq.write(request.body);
+            // re-stream the body (intercepted by body parser method)
+            if (request.rawBody) {
+              proxyReq.write(request.rawBody);
             }
           },
           onProxyRes: (
