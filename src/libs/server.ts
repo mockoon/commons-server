@@ -267,12 +267,10 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
       // only launch non duplicated routes, or ignore if none.
       if (declaredRoute.enabled) {
         try {
-          const routePath =
-            '/' +
-            (this.environment.endpointPrefix
-              ? this.environment.endpointPrefix + '/'
-              : '') +
-            declaredRoute.endpoint.replace(/ /g, '%20');
+          let routePath = `/${
+            this.environment.endpointPrefix
+          }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
+          routePath = routePath.replace('//', '');
 
           // create route
           server[declaredRoute.method](
