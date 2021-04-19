@@ -270,7 +270,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
           let routePath = `/${
             this.environment.endpointPrefix
           }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
-          routePath = routePath.replace('//', '');
+          routePath = routePath.replace('//', '/');
 
           // create route
           server[declaredRoute.method](
