@@ -1,6 +1,6 @@
 # Contributing to Mockoon-commons-server
 
-> **[Guidelines from Mockoon's main repository](https://github.com/mockoon/mockoon/blob/master/CONTRIBUTING.md) must be followed.**
+> **[Guidelines from Mockoon's main repository](https://github.com/mockoon/mockoon/blob/main/CONTRIBUTING.md) must be followed.**
 > **Specific guidelines below applies to this repository:**
 
 ## Application dependence
@@ -40,7 +40,7 @@ Some of the build steps require the Linux `rm` command. If you are buliding on W
  - Run `npm install` to install dependencies.
  - Run `npm run build` to build the commons-server package.
  - In the Mockoon app directory, run `npm link ./path/to/local/mockoon/commons-server` to install your newly built commons-server package.
- - Follow the [build and run instructions](https://github.com/mockoon/mockoon/blob/master/CONTRIBUTING.md) for the main application.
+ - Follow the [build and run instructions](https://github.com/mockoon/mockoon/blob/main/CONTRIBUTING.md) for the main application.
 
 Run the unit tests and the linter before submitting pull requests. (`npm run test` and `npm run lint`).
 Run the Prettier extension to format code before submitting. Either via the VSCode extension, or on the command line (`npx prettier --write ./path/to/code-file.ts`)

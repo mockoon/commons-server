@@ -23,7 +23,7 @@ You can discuss all things related to Mockoon, and ask for help, on the [main ap
 
 ## Contributing
 
-If you are interested in contributing to Mockoon, please take a look at the main [contributing guidelines](https://github.com/mockoon/mockoon/blob/master/CONTRIBUTING.md) and the [ones specific to this repository](https://github.com/mockoon/commons-server/blob/main/CONTRIBUTING.md).
+If you are interested in contributing to Mockoon, please take a look at the main [contributing guidelines](https://github.com/mockoon/mockoon/blob/main/CONTRIBUTING.md) and the [ones specific to this repository](https://github.com/mockoon/commons-server/blob/main/CONTRIBUTING.md).
 
 Please also take a look at our [Code of Conduct](https://github.com/mockoon/commons-server/blob/main/CODE_OF_CONDUCT.md).
 
