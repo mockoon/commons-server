@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint -c .eslintrc.js --ext .js,.ts .",
+    "format": "prettier {src,test}/**/*.{ts,js,scss,html} --check",
     "test": "ts-mocha -p ./tsconfig-build-cjs.json --timeout 10000 --forbid-only test/**/*.spec.ts",
     "build": "tsc -p tsconfig-build.json && tsc -p tsconfig-build-cjs.json"
   },
