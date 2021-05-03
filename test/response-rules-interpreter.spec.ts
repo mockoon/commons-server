@@ -55,8 +55,9 @@ describe('Response rules interpreter', () => {
     const routeResponse = new ResponseRulesInterpreter(
       [routeResponse403, routeResponseTemplate],
       request,
+      false,
       false
-    ).chooseResponse();
+    ).chooseResponse(1);
 
     expect(routeResponse.body).to.be.equal('unauthorized');
   });
@@ -90,8 +91,9 @@ describe('Response rules interpreter', () => {
         }
       ],
       request,
+      false,
       false
-    ).chooseResponse();
+    ).chooseResponse(1);
 
     expect(routeResponse.body).to.be.equal('unauthorized');
   });
@@ -125,8 +127,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('query1');
     });
@@ -159,8 +162,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
@@ -193,8 +197,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('query3');
     });
@@ -227,8 +232,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('query4');
     });
@@ -261,8 +267,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('query5');
     });
@@ -295,8 +302,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
@@ -329,8 +337,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
@@ -365,8 +374,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('params1');
     });
 
@@ -398,8 +408,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('params2');
     });
 
@@ -431,8 +442,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -464,8 +476,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -497,9 +510,302 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
+    });
+  });
+
+  describe('Request number rules', () => {
+    it('should return response if request number matches', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'request_number',
+                modifier: '',
+                value: '2',
+                isRegex: false
+              }
+            ],
+            body: 'request_number_2'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(2);
+      expect(routeResponse.body).to.be.equal('request_number_2');
+    });
+
+    it("should not return response if request number don't matches", () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'request_number',
+                modifier: '',
+                value: '2',
+                isRegex: false
+              }
+            ],
+            body: 'request_number_2'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(3);
+      expect(routeResponse.body).not.to.be.equal('request_number_2');
+    });
+
+    it('should return response if request matches regex', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'request_number',
+                modifier: '',
+                value: '^[1-9][0-9]?$|^100$',
+                isRegex: true
+              }
+            ],
+            body: 'request_number_regex'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(99);
+      expect(routeResponse.body).to.be.equal('request_number_regex');
+    });
+
+    it("should not return response if request don't matches regex", () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'request_number',
+                modifier: '',
+                value: '^[1-9][0-9]?$|^100$',
+                isRegex: true
+              }
+            ],
+            body: 'request_number_regex'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(101);
+      expect(routeResponse.body).not.to.be.equal('request_number_regex');
+    });
+  });
+
+  describe('Sequential responses', () => {
+    it('should return first response if request is the first', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_1'
+          }
+        ],
+        request,
+        false,
+        true
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('request_number_1');
+    });
+
+    it('should return the last response if request is the last', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_1'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_2'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_3'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_4'
+          }
+        ],
+        request,
+        false,
+        true
+      ).chooseResponse(4);
+      expect(routeResponse.body).to.be.equal('request_number_4');
+    });
+
+    it('should return the first response if request is the last plus one', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_1'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_2'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_3'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_4'
+          }
+        ],
+        request,
+        false,
+        true
+      ).chooseResponse(4 + 1);
+      expect(routeResponse.body).to.be.equal('request_number_1');
+    });
+
+    it('should return the second response if request is the second one', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_1'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_2'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_3'
+          },
+          {
+            ...routeResponseTemplate,
+            body: 'request_number_4'
+          }
+        ],
+        request,
+        false,
+        true
+      ).chooseResponse(2);
+      expect(routeResponse.body).to.be.equal('request_number_2');
     });
   });
 
@@ -534,8 +840,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('header1');
     });
 
@@ -569,8 +876,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('header2');
     });
 
@@ -604,8 +912,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -639,8 +948,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -674,8 +984,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
   });
@@ -710,8 +1021,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body1');
     });
 
@@ -744,8 +1056,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body2');
     });
 
@@ -778,8 +1091,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -812,8 +1126,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body4');
     });
 
@@ -846,8 +1161,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body5');
     });
 
@@ -880,8 +1196,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body6');
     });
 
@@ -914,8 +1231,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body7');
     });
 
@@ -948,8 +1266,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body8');
     });
 
@@ -982,8 +1301,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body9');
     });
 
@@ -1016,8 +1336,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body10');
     });
 
@@ -1050,8 +1371,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body11');
     });
 
@@ -1084,8 +1406,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body12');
     });
 
@@ -1118,8 +1441,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body13');
     });
 
@@ -1152,8 +1476,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body14');
     });
 
@@ -1186,8 +1511,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body15');
     });
 
@@ -1220,8 +1546,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body16');
     });
 
@@ -1254,8 +1581,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body17');
     });
 
@@ -1288,8 +1616,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body19');
     });
 
@@ -1322,8 +1651,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body19');
     });
   });
@@ -1366,8 +1696,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('complex1');
     });
 
@@ -1408,8 +1739,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
@@ -1450,8 +1782,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('complex3');
     });
 
@@ -1492,8 +1825,9 @@ describe('Response rules interpreter', () => {
           }
         ],
         request,
+        false,
         false
-      ).chooseResponse();
+      ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
   });
