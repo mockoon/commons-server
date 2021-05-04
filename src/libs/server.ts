@@ -296,8 +296,10 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
                 currentRoute.responses,
                 request,
                 currentRoute.randomResponse,
-                false
-              ).chooseResponse(requestNumber++);
+                currentRoute.sequentialResponse
+              ).chooseResponse(requestNumber);
+
+              requestNumber += 1;
 
               // save route and response UUIDs for logs (only in desktop app)
               if (declaredRoute.uuid && enabledRouteResponse.uuid) {

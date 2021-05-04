@@ -22,6 +22,7 @@ const routeResponse403: RouteResponse = {
   rules: [],
   rulesOperator: 'OR'
 };
+
 const routeResponseTemplate: RouteResponse = {
   uuid: '',
   body: '',
@@ -540,18 +541,18 @@ describe('Response rules interpreter', () => {
               {
                 target: 'request_number',
                 modifier: '',
-                value: '2',
+                value: '1',
                 isRegex: false
               }
             ],
-            body: 'request_number_2'
+            body: 'request_number_1'
           }
         ],
         request,
         false,
         false
-      ).chooseResponse(2);
-      expect(routeResponse.body).to.be.equal('request_number_2');
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('request_number_1');
     });
 
     it("should not return response if request number don't matches", () => {
@@ -576,21 +577,21 @@ describe('Response rules interpreter', () => {
               {
                 target: 'request_number',
                 modifier: '',
-                value: '2',
+                value: '1',
                 isRegex: false
               }
             ],
-            body: 'request_number_2'
+            body: 'request_number_1'
           }
         ],
         request,
         false,
         false
-      ).chooseResponse(3);
-      expect(routeResponse.body).not.to.be.equal('request_number_2');
+      ).chooseResponse(2);
+      expect(routeResponse.body).to.be.equal('unauthorized');
     });
 
-    it('should return response if request matches regex', () => {
+    it('should return response if request number matches regex', () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
@@ -659,12 +660,64 @@ describe('Response rules interpreter', () => {
         false,
         false
       ).chooseResponse(101);
-      expect(routeResponse.body).not.to.be.equal('request_number_regex');
+      expect(routeResponse.body).to.be.equal('unauthorized');
+    });
+
+    it('should return response if both rules match with request number', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            Authorization: 'test'
+          };
+
+          return headers[headerName];
+        },
+        body: ''
+      } as Request;
+
+      const responseRulesinterpreter = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'header',
+                modifier: 'Authorization',
+                value: '^$|s+',
+                isRegex: true
+              },
+              {
+                target: 'request_number',
+                modifier: '',
+                value: '1|2',
+                isRegex: true
+              }
+            ],
+            rulesOperator: 'AND',
+            body: 'request_number_complex1'
+          }
+        ],
+        request,
+        false,
+        false
+      );
+
+      expect(responseRulesinterpreter.chooseResponse(1).body).to.be.equal(
+        'request_number_complex1'
+      );
+      expect(responseRulesinterpreter.chooseResponse(2).body).to.be.equal(
+        'request_number_complex1'
+      );
+      expect(responseRulesinterpreter.chooseResponse(3).body).to.be.equal(
+        'unauthorized'
+      );
     });
   });
 
   describe('Sequential responses', () => {
-    it('should return first response if request is the first', () => {
+    it('should return each response depending on the request call index and go back to the first one', () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
@@ -677,34 +730,7 @@ describe('Response rules interpreter', () => {
         body: ''
       } as Request;
 
-      const routeResponse = new ResponseRulesInterpreter(
-        [
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_1'
-          }
-        ],
-        request,
-        false,
-        true
-      ).chooseResponse(1);
-      expect(routeResponse.body).to.be.equal('request_number_1');
-    });
-
-    it('should return the last response if request is the last', () => {
-      const request: Request = {
-        header: function (headerName: string) {
-          const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Charset': 'UTF-8'
-          };
-
-          return headers[headerName];
-        },
-        body: ''
-      } as Request;
-
-      const routeResponse = new ResponseRulesInterpreter(
+      const responseRulesInterpreter = new ResponseRulesInterpreter(
         [
           {
             ...routeResponseTemplate,
@@ -726,86 +752,22 @@ describe('Response rules interpreter', () => {
         request,
         false,
         true
-      ).chooseResponse(4);
-      expect(routeResponse.body).to.be.equal('request_number_4');
-    });
-
-    it('should return the first response if request is the last plus one', () => {
-      const request: Request = {
-        header: function (headerName: string) {
-          const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Charset': 'UTF-8'
-          };
-
-          return headers[headerName];
-        },
-        body: ''
-      } as Request;
-
-      const routeResponse = new ResponseRulesInterpreter(
-        [
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_1'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_2'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_3'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_4'
-          }
-        ],
-        request,
-        false,
-        true
-      ).chooseResponse(4 + 1);
-      expect(routeResponse.body).to.be.equal('request_number_1');
-    });
-
-    it('should return the second response if request is the second one', () => {
-      const request: Request = {
-        header: function (headerName: string) {
-          const headers = {
-            'Content-Type': 'application/json',
-            'Accept-Charset': 'UTF-8'
-          };
-
-          return headers[headerName];
-        },
-        body: ''
-      } as Request;
-
-      const routeResponse = new ResponseRulesInterpreter(
-        [
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_1'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_2'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_3'
-          },
-          {
-            ...routeResponseTemplate,
-            body: 'request_number_4'
-          }
-        ],
-        request,
-        false,
-        true
-      ).chooseResponse(2);
-      expect(routeResponse.body).to.be.equal('request_number_2');
+      );
+      expect(responseRulesInterpreter.chooseResponse(1).body).to.be.equal(
+        'request_number_1'
+      );
+      expect(responseRulesInterpreter.chooseResponse(1).body).to.be.equal(
+        'request_number_1'
+      );
+      expect(responseRulesInterpreter.chooseResponse(3).body).to.be.equal(
+        'request_number_3'
+      );
+      expect(responseRulesInterpreter.chooseResponse(4).body).to.be.equal(
+        'request_number_4'
+      );
+      expect(responseRulesInterpreter.chooseResponse(5).body).to.be.equal(
+        'request_number_1'
+      );
     });
   });
 

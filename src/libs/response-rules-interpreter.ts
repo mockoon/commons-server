@@ -40,6 +40,7 @@ export class ResponseRulesInterpreter {
 
       return this.routeResponses[randomStatus];
     }
+
     if (this.sequentialResponse) {
       return this.routeResponses[
         (requestNumber - 1) % this.routeResponses.length
