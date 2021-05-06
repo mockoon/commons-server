@@ -1792,5 +1792,52 @@ describe('Response rules interpreter', () => {
       ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('unauthorized');
     });
+
+    it('should return second response if first one has no rule with AND', () => {
+      /**
+       * This test is here to prevent a bug that occured when first response had no rule but a AND operator.
+       * It intercepted everything and prevented to get the correct response.
+       * See https://github.com/mockoon/commons-server/issues/6
+       */
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Test-Header': 'headervalue'
+          };
+
+          return headers[headerName];
+        },
+        body: '{ "test": "bodyvalue" }'
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          {
+            ...routeResponseTemplate,
+            rules: [],
+            rulesOperator: 'AND',
+            body: 'response1'
+          },
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'body',
+                modifier: 'test',
+                value: 'bodyvalue',
+                isRegex: false
+              }
+            ],
+            rulesOperator: 'OR',
+            body: 'response2'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('response2');
+    });
   });
 });

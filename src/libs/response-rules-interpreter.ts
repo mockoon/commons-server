@@ -46,15 +46,19 @@ export class ResponseRulesInterpreter {
         (requestNumber - 1) % this.routeResponses.length
       ];
     } else {
-      let response = this.routeResponses.find((routeResponse) =>
-        routeResponse.rulesOperator === 'AND'
-          ? !!routeResponse.rules.every((rule) =>
+      let response = this.routeResponses.find((routeResponse) => {
+        if (routeResponse.rules.length === 0) {
+          return false;
+        }
+
+        return routeResponse.rulesOperator === 'AND'
+          ? routeResponse.rules.every((rule) =>
               this.isValidRule(rule, requestNumber)
             )
-          : !!routeResponse.rules.find((rule) =>
+          : routeResponse.rules.some((rule) =>
               this.isValidRule(rule, requestNumber)
-            )
-      );
+            );
+      });
 
       if (response === undefined) {
         response = this.routeResponses[0];
