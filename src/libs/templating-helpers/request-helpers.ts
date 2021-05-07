@@ -1,8 +1,12 @@
+import { Environment } from '@mockoon/commons';
 import { Request } from 'express';
 import { SafeString } from 'handlebars';
 import { get as objectGet } from 'object-path';
 
-export const RequestHelpers = function (request: Request) {
+export const RequestHelpers = function (
+  request: Request,
+  environment: Environment
+) {
   return {
     // get json property from body
     body: function (path: string, defaultValue: string, stringify: boolean) {
@@ -109,6 +113,15 @@ export const RequestHelpers = function (request: Request) {
       }
 
       return request.cookies[key] || defaultValue;
+    },
+    // use request baseUrl
+    baseUrl: function () {
+      const prefix = !!environment.endpointPrefix
+        ? `/${environment.endpointPrefix}`
+        : '';
+      const protocol = environment.https ? 'https' : 'http';
+
+      return `${protocol}://${request.hostname}:${environment.port}${prefix}`;
     },
     // use request hostname
     hostname: function () {

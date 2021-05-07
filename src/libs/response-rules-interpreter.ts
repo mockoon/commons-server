@@ -14,13 +14,16 @@ import { parse as qsParse, ParsedQs } from 'qs';
  */
 export class ResponseRulesInterpreter {
   private targets: {
-    [key in Exclude<ResponseRuleTargets, 'header'> | 'bodyRaw']: any;
+    [key in
+      | Exclude<ResponseRuleTargets, 'header' | 'request_number'>
+      | 'bodyRaw']: any;
   };
 
   constructor(
     private routeResponses: RouteResponse[],
     private request: Request,
-    private randomResponse: boolean
+    private randomResponse: boolean,
+    private sequentialResponse: boolean
   ) {
     this.extractTargets();
   }
@@ -29,19 +32,33 @@ export class ResponseRulesInterpreter {
    * Choose the route response depending on the first fulfilled rule.
    * If no rule has been fulfilled get the first route response.
    */
-  public chooseResponse(): RouteResponse {
+  public chooseResponse(requestNumber: number): RouteResponse {
     if (this.randomResponse) {
       const randomStatus = Math.floor(
         Math.random() * this.routeResponses.length
       );
 
       return this.routeResponses[randomStatus];
+    }
+
+    if (this.sequentialResponse) {
+      return this.routeResponses[
+        (requestNumber - 1) % this.routeResponses.length
+      ];
     } else {
-      let response = this.routeResponses.find((routeResponse) =>
-        routeResponse.rulesOperator === 'AND'
-          ? !!routeResponse.rules.every(this.isValidRule)
-          : !!routeResponse.rules.find(this.isValidRule)
-      );
+      let response = this.routeResponses.find((routeResponse) => {
+        if (routeResponse.rules.length === 0) {
+          return false;
+        }
+
+        return routeResponse.rulesOperator === 'AND'
+          ? routeResponse.rules.every((rule) =>
+              this.isValidRule(rule, requestNumber)
+            )
+          : routeResponse.rules.some((rule) =>
+              this.isValidRule(rule, requestNumber)
+            );
+      });
 
       if (response === undefined) {
         response = this.routeResponses[0];
@@ -54,12 +71,19 @@ export class ResponseRulesInterpreter {
   /**
    * Check if a rule is valid by comparing the value extracted from the target to the rule value
    */
-  private isValidRule = (rule: ResponseRule): boolean => {
+  private isValidRule = (
+    rule: ResponseRule,
+    requestNumber: number
+  ): boolean => {
     if (!rule.target) {
       return false;
     }
 
     let value: any;
+
+    if (rule.target === 'request_number') {
+      value = requestNumber;
+    }
 
     if (rule.target === 'header') {
       value = this.request.header(rule.modifier);
