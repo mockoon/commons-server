@@ -16,5 +16,7 @@ export const SetFakerLocale = (locale: FakerAvailableLocales) => {
  * @param seed
  */
 export const SetFakerSeed = (seed: number) => {
-  faker.seed(seed);
+  if (seed !== undefined && seed !== null) {
+    faker.seed(seed);
+  }
 };
