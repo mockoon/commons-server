@@ -116,7 +116,7 @@ export const RequestHelpers = function (
     },
     // use request baseUrl
     baseUrl: function () {
-      const prefix = !!environment.endpointPrefix
+      const prefix = environment.endpointPrefix
         ? `/${environment.endpointPrefix}`
         : '';
       const protocol = environment.https ? 'https' : 'http';
