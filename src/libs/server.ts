@@ -331,7 +331,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
                   if (enabledRouteResponse.filePath) {
                     const filePath = TemplateParser(
                       enabledRouteResponse.filePath.replace(/\\/g, '/'),
-                      request
+                      request,
+                      this.environment
                     );
                     const fileMimeType = mimeTypeLookup(filePath) || '';
 
@@ -360,7 +361,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
                         ) {
                           const fileContent = TemplateParser(
                             data.toString(),
-                            request
+                            request,
+                            this.environment
                           );
                           response.body = fileContent;
                           response.send(fileContent);
@@ -389,7 +391,11 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
                     let body = enabledRouteResponse.body;
 
                     if (!enabledRouteResponse.disableTemplating) {
-                      body = TemplateParser(body || '', request);
+                      body = TemplateParser(
+                        body || '',
+                        request,
+                        this.environment
+                      );
                     }
 
                     response.body = body;
@@ -556,7 +562,11 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
       if (header.key && header.value && !TestHeaderValidity(header.key)) {
         let parsedHeaderValue: string;
         try {
-          parsedHeaderValue = TemplateParser(header.value, source);
+          parsedHeaderValue = TemplateParser(
+            header.value,
+            source,
+            this.environment
+          );
         } catch (error) {
           const errorMessage = Texts.EN.MESSAGES.HEADER_PARSING_ERROR;
           parsedHeaderValue = errorMessage;

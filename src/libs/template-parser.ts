@@ -1,3 +1,4 @@
+import { Environment } from '@mockoon/commons';
 import { Request } from 'express';
 import { compile as hbsCompile } from 'handlebars';
 import { FakerWrapper } from './templating-helpers/faker-wrapper';
@@ -12,7 +13,8 @@ import { RequestHelpers } from './templating-helpers/request-helpers';
  */
 export const TemplateParser = function (
   content: string,
-  request: Request
+  request: Request,
+  environment: Environment
 ): string {
   try {
     return hbsCompile(content)(
@@ -20,7 +22,7 @@ export const TemplateParser = function (
       {
         helpers: {
           ...FakerWrapper,
-          ...RequestHelpers(request),
+          ...RequestHelpers(request, environment),
           ...Helpers
         }
       }
