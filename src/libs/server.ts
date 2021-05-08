@@ -89,7 +89,9 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
       this.emit('error', errorCode, error);
     });
 
-    this.serverInstance.listen(this.environment.port, () => {
+    const hostname = this.environment.hostname ?? '0.0.0.0';
+
+    this.serverInstance.listen(this.environment.port, hostname, () => {
       this.emit('started');
     });
 
