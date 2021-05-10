@@ -44,9 +44,7 @@ import { CreateTransaction } from './utils';
  *
  * Extends EventEmitter.
  */
-export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
-  ServerEvents
->) {
+export class MockoonServer extends (EventEmitter as new () => TypedEmitter<ServerEvents>) {
   private serverInstance: httpServer | httpsServer;
 
   constructor(
@@ -185,9 +183,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
     next: NextFunction
   ) => {
     // Parse body as a raw string and JSON/form if applicable
-    const requestContentType: string | undefined = request.header(
-      'Content-Type'
-    );
+    const requestContentType: string | undefined =
+      request.header('Content-Type');
 
     const rawBody: Buffer[] = [];
 
