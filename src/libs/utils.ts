@@ -77,7 +77,7 @@ export const CreateTransaction = (
 ): Transaction => ({
   request: {
     method: request.method,
-    urlPath: new URL(request.originalUrl).pathname,
+    urlPath: new URL(request.originalUrl, 'http://localhost/').pathname,
     route: request.route ? request.route.path : null,
     params: request.params
       ? Object.keys(request.params).map((paramName) => ({
