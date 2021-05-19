@@ -565,6 +565,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
    */
   private setHeaders(headers: Header[], target: any, request: Request) {
     headers.forEach((header: Header) => {
+      const isSetCookie = header.key.toLowerCase() === 'set-cookie';
       const parsedHeaderValue = this.parseHeader(header, request);
 
       if (parsedHeaderValue === null) {
@@ -573,26 +574,24 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
       if (target.set) {
         // for express.Response
-        if (header.key.toLowerCase() === 'content-type') {
-          target.set(header.key, parsedHeaderValue);
-        } else {
+        if (isSetCookie) {
           target.append(header.key, parsedHeaderValue);
+        } else {
+          target.set(header.key, parsedHeaderValue);
         }
       } else if (target.setHeader) {
-        // for proxy http.OutgoingMessage
-        target.setHeader(
-          header.key,
-          this.appendHeaderValue(
-            target.getHeader(header.key),
-            parsedHeaderValue
-          )
-        );
+        // for proxy http.OutgoingMessage | ClientRequest
+        target.setHeader(header.key, parsedHeaderValue);
       } else {
         // for http.IncomingMessage
-        target.headers[header.key] = this.appendHeaderValue(
-          target.headers[header.key],
-          parsedHeaderValue
-        );
+        if (isSetCookie) {
+          target.headers[header.key] = this.appendHeaderValue(
+            target.headers[header.key],
+            parsedHeaderValue
+          );
+        } else {
+          target.headers[header.key] = parsedHeaderValue;
+        }
       }
     });
   }
