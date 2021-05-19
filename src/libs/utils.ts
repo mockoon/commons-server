@@ -69,9 +69,8 @@ export const RandomInt = (a = 1, b = 0) => {
  *
  * @param response
  */
- export const DecompressBody = (response: Response) => {
-
-  if(!response.body){
+export const DecompressBody = (response: Response) => {
+  if (!response.body) {
     return response.body;
   }
 
@@ -82,7 +81,7 @@ export const RandomInt = (a = 1, b = 0) => {
       body = zlib.unzipSync(body);
       break;
     case 'br':
-      body =  zlib.brotliDecompressSync(body);
+      body = zlib.brotliDecompressSync(body);
       break;
     case 'deflate':
       body = zlib.inflateSync(body);
