@@ -44,9 +44,7 @@ import { CreateTransaction } from './utils';
  *
  * Extends EventEmitter.
  */
-export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
-  ServerEvents
->) {
+export class MockoonServer extends (EventEmitter as new () => TypedEmitter<ServerEvents>) {
   private serverInstance: httpServer | httpsServer;
 
   constructor(
@@ -187,9 +185,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
     next: NextFunction
   ) => {
     // Parse body as a raw string and JSON/form if applicable
-    const requestContentType: string | undefined = request.header(
-      'Content-Type'
-    );
+    const requestContentType: string | undefined =
+      request.header('Content-Type');
 
     const rawBody: Buffer[] = [];
 
@@ -495,6 +492,14 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
               request
             );
 
+            if (
+              this.environment.proxyRemovePrefix === true &&
+              this.environment.endpointPrefix.length > 0
+            ) {
+              const regExp = new RegExp(`^/${this.environment.endpointPrefix}`);
+              proxyReq.path = proxyReq.path.replace(regExp, '');
+            }
+
             // re-stream the body (intercepted by body parser method)
             if (request.rawBody) {
               proxyReq.write(request.rawBody);
@@ -558,35 +563,87 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<
    *
    * @param headers
    * @param target
-   * @param source
+   * @param request
    */
-  private setHeaders(headers: Partial<Header>[], target: any, source: any) {
-    headers.forEach((header) => {
-      if (header.key && header.value && !TestHeaderValidity(header.key)) {
-        let parsedHeaderValue: string;
-        try {
-          parsedHeaderValue = TemplateParser(
-            header.value,
-            source,
-            this.environment
-          );
-        } catch (error) {
-          const errorMessage = Texts.EN.MESSAGES.HEADER_PARSING_ERROR;
-          parsedHeaderValue = errorMessage;
-        }
+  private setHeaders(headers: Header[], target: any, request: Request) {
+    headers.forEach((header: Header) => {
+      const isSetCookie = header.key.toLowerCase() === 'set-cookie';
+      const parsedHeaderValue = this.parseHeader(header, request);
 
-        if (target.set) {
-          // for express.Response
-          target.set(header.key, parsedHeaderValue);
-        } else if (target.setHeader) {
-          // for proxy http.OutgoingMessage
-          target.setHeader(header.key, parsedHeaderValue);
+      if (parsedHeaderValue === null) {
+        return;
+      }
+
+      if (target.set) {
+        // for express.Response
+        if (isSetCookie) {
+          target.append(header.key, parsedHeaderValue);
         } else {
-          // for http.IncomingMessage
+          target.set(header.key, parsedHeaderValue);
+        }
+      } else if (target.setHeader) {
+        // for proxy http.OutgoingMessage | ClientRequest
+        target.setHeader(header.key, parsedHeaderValue);
+      } else {
+        // for http.IncomingMessage
+        if (isSetCookie) {
+          target.headers[header.key] = this.appendHeaderValue(
+            target.headers[header.key],
+            parsedHeaderValue
+          );
+        } else {
           target.headers[header.key] = parsedHeaderValue;
         }
       }
     });
+  }
+
+  /**
+   * If header already has a value, concatenate the values into an array
+   *
+   * @param currentValue
+   * @param newValue
+   * @returns
+   */
+  private appendHeaderValue(
+    currentValue: string | string[],
+    newValue: string
+  ): string | string[] {
+    let headerValue: string | string[] = newValue;
+
+    if (currentValue) {
+      headerValue = Array.isArray(currentValue)
+        ? currentValue.concat(headerValue)
+        : [currentValue, headerValue];
+    }
+
+    return headerValue;
+  }
+
+  /**
+   * Verify a header validity and parse its content, if templating is used
+   *
+   * @param header
+   * @param request
+   * @returns
+   */
+  private parseHeader(header: Header, request: Request): string | null {
+    let parsedHeaderValue: string | null = null;
+
+    if (header.key && header.value && !TestHeaderValidity(header.key)) {
+      try {
+        parsedHeaderValue = TemplateParser(
+          header.value,
+          request,
+          this.environment
+        );
+      } catch (error) {
+        const errorMessage = Texts.EN.MESSAGES.HEADER_PARSING_ERROR;
+        parsedHeaderValue = errorMessage;
+      }
+    }
+
+    return parsedHeaderValue;
   }
 
   /**

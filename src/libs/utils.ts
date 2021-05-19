@@ -1,7 +1,7 @@
 import { Header, Transaction } from '@mockoon/commons';
 import { Request, Response } from 'express';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
-import { parse as urlParse } from 'url';
+import { URL } from 'url';
 
 /**
  * Transform http headers objects to Mockoon's Header key value object
@@ -77,7 +77,7 @@ export const CreateTransaction = (
 ): Transaction => ({
   request: {
     method: request.method,
-    urlPath: urlParse(request.originalUrl).pathname,
+    urlPath: new URL(request.originalUrl, 'http://localhost/').pathname,
     route: request.route ? request.route.path : null,
     params: request.params
       ? Object.keys(request.params).map((paramName) => ({
