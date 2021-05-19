@@ -510,12 +510,12 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           ) => {
             this.refreshEnvironment();
 
-            let body = '';
+            let buffers:Buffer[] = []
             proxyRes.on('data', (chunk) => {
-              body += chunk;
+              buffers.push(chunk)
             });
             proxyRes.on('end', () => {
-              response.body = body;
+              response.body = Buffer.concat(buffers);
             });
 
             this.setHeaders(
