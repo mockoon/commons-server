@@ -53,6 +53,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   ) {
     super();
   }
+
   /**
    * Start a server
    */
@@ -76,22 +77,34 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
     // handle server errors
     this.serverInstance.on('error', (error) => {
-      let errorCode = ServerErrorCodes.UNKNOWN_SERVER_ERROR;
+      let errorCode: ServerErrorCodes;
 
-      if (error.code === 'EADDRINUSE') {
-        errorCode = ServerErrorCodes.PORT_ALREADY_USED;
-      } else if (error.code === 'EACCES') {
-        errorCode = ServerErrorCodes.PORT_INVALID;
+      switch (error.code) {
+        case 'EADDRINUSE':
+          errorCode = ServerErrorCodes.PORT_ALREADY_USED;
+          break;
+        case 'EACCES':
+          errorCode = ServerErrorCodes.PORT_INVALID;
+          break;
+        case 'EADDRNOTAVAIL':
+          errorCode = ServerErrorCodes.HOSTNAME_UNAVAILABLE;
+          break;
+        case 'ENOTFOUND':
+          errorCode = ServerErrorCodes.HOSTNAME_UNKNOWN;
+          break;
+        default:
+          errorCode = ServerErrorCodes.UNKNOWN_SERVER_ERROR;
       }
-
       this.emit('error', errorCode, error);
     });
 
-    const hostname = this.environment.hostname ?? '0.0.0.0';
-
-    this.serverInstance.listen(this.environment.port, hostname, () => {
-      this.emit('started');
-    });
+    this.serverInstance.listen(
+      this.environment.port,
+      this.environment.hostname,
+      () => {
+        this.emit('started');
+      }
+    );
 
     server.use(this.emitEvent);
     server.use(this.delayResponse);

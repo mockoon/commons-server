@@ -1,0 +1,42 @@
+{
+  "uuid": "c6199444-5116-490a-99a2-074876253a4a",
+  "lastMigration": 16,
+  "name": "Bad Port Test",
+  "port": 3000,
+  "hostname": "0.0.0.0",
+  "endpointPrefix": "",
+  "latency": 0,
+  "routes": [
+    {
+      "uuid": "85e236c4-decc-467c-b288-d243181a250f",
+      "documentation": "doc",
+      "method": "get",
+      "endpoint": "test",
+      "responses": [
+        {
+          "uuid": "cd4eb020-310f-4bca-adda-98410cf65a62",
+          "rules": [],
+          "rulesOperator": "OR",
+          "statusCode": 200,
+          "label": "Route",
+          "headers": [],
+          "latency": 0,
+          "filePath": "",
+          "sendFileAsBody": false,
+          "disableTemplating": false
+        }
+      ],
+      "enabled": true,
+      "randomResponse": false,
+      "sequentialResponse": false
+    }
+  ],
+  "proxyMode": false,
+  "proxyRemovePrefix": false,
+  "proxyHost": "",
+  "proxyReqHeaders": [],
+  "proxyResHeaders": [],
+  "https": false,
+  "cors": false,
+  "headers": []
+}
