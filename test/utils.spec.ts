@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { ToBase64 } from '../src/libs/utils';
+import { SafeString } from 'handlebars';
+import { fromSafeString, ToBase64 } from '../src/libs/utils';
 
 describe('Utils', () => {
   describe('toBase64', () => {
@@ -19,6 +20,20 @@ describe('Utils', () => {
 
     afterEach(() => {
       (global.btoa as unknown) = undefined;
+    });
+  });
+
+  describe('fromSafeString', () => {
+    it('should return a string if input is a string', () => {
+      const newString = fromSafeString('text');
+
+      expect(newString).to.equal('text');
+    });
+
+    it('should return a string if input is a SafeString', () => {
+      const newString = fromSafeString(new SafeString('text'));
+
+      expect(newString).to.equal('text');
     });
   });
 });
