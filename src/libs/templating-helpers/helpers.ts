@@ -3,7 +3,7 @@ import { format as dateFormat } from 'date-fns';
 import faker from 'faker';
 import { HelperOptions, SafeString } from 'handlebars';
 import { EOL } from 'os';
-import { RandomInt, ToBase64 } from '../utils';
+import { fromSafeString, RandomInt, ToBase64 } from '../utils';
 
 /**
  * Handlebars may insert its own `options` object as the last argument.
@@ -169,8 +169,8 @@ export const Helpers = {
     let format: undefined | string;
 
     if (typeof options === 'object' && options.hash) {
-      date = options.hash['date'];
-      format = options.hash['format'];
+      date = fromSafeString(options.hash['date']);
+      format = fromSafeString(options.hash['format']);
     }
 
     // If no date is specified, default to now. If a string is specified, then parse it to a date.
