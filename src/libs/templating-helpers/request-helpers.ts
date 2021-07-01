@@ -104,6 +104,10 @@ export const RequestHelpers = function (
         defaultValue = '';
       }
 
+      if (typeof headerName === 'object') {
+        return defaultValue;
+      }
+
       return request.get(headerName) || defaultValue;
     },
     // use value of cookie

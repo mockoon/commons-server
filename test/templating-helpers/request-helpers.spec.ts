@@ -1,6 +1,16 @@
 import { expect } from 'chai';
 import { TemplateParser } from '../../src/libs/template-parser';
 
+const requestMock = {
+  get: function (headerName: string) {
+    const headers = {
+      'Test-Header': 'headervalue'
+    };
+
+    return headers[headerName];
+  }
+} as any;
+
 describe('Template parser', () => {
   describe('Helper: body', () => {
     it('should return number without quotes', () => {
@@ -308,6 +318,40 @@ describe('Template parser', () => {
         } as any
       );
       expect(parseResult).to.be.equal('https://localhost:3001');
+    });
+  });
+
+  describe('Helper: header', () => {
+    it('should return the header value', () => {
+      const parseResult = TemplateParser(
+        "{{header 'Test-Header'}}",
+        requestMock,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('headervalue');
+    });
+
+    it('should return an empty string if no name provided', () => {
+      const parseResult = TemplateParser('{{header}}', requestMock, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return a empty string if name not found', () => {
+      const parseResult = TemplateParser(
+        "{{header 'notfound'}}",
+        requestMock,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return a default value if provided and name not found', () => {
+      const parseResult = TemplateParser(
+        "{{header 'notfound' 'defaultvalue'}}",
+        requestMock,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('defaultvalue');
     });
   });
 });
