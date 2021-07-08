@@ -1,5 +1,6 @@
 import { Header, Transaction } from '@mockoon/commons';
 import { Request, Response } from 'express';
+import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
 import { URL } from 'url';
 import zlib from 'zlib';
@@ -149,3 +150,12 @@ export const ToBase64 = (text: string): string => {
 
   return text;
 };
+
+/**
+ * Convert a SafeString to a string if needed.
+ *
+ * @param text
+ * @returns
+ */
+export const fromSafeString = (text: string | SafeString) =>
+  text instanceof SafeString ? text.toString() : text;

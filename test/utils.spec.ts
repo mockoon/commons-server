@@ -1,7 +1,8 @@
 import { expect } from 'chai';
 import { Response } from 'express';
 import fs from 'fs';
-import { DecompressBody, ToBase64 } from '../src/libs/utils';
+import { SafeString } from 'handlebars';
+import { DecompressBody, fromSafeString, ToBase64 } from '../src/libs/utils';
 
 describe('Utils', () => {
   describe('toBase64', () => {
@@ -65,6 +66,20 @@ describe('Utils', () => {
       };
 
       expect(DecompressBody(response as Response)).to.equal('plainTest');
+    });
+  });
+  
+  describe('fromSafeString', () => {
+    it('should return a string if input is a string', () => {
+      const newString = fromSafeString('text');
+
+      expect(newString).to.equal('text');
+    });
+
+    it('should return a string if input is a SafeString', () => {
+      const newString = fromSafeString(new SafeString('text'));
+
+      expect(newString).to.equal('text');
     });
   });
 });
