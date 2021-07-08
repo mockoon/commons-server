@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
 import { URL } from 'url';
+import { brotliDecompressSync, inflateSync, unzipSync } from 'zlib';
 
 /**
  * Transform http headers objects to Mockoon's Header key value object
@@ -66,6 +67,35 @@ export const RandomInt = (a = 1, b = 0) => {
 };
 
 /**
+ * Decompress body based on content-encoding
+ *
+ * @param response
+ */
+export const DecompressBody = (response: Response) => {
+  if (!response.body) {
+    return response.body;
+  }
+
+  const contentEncoding = response.getHeader('content-encoding');
+  let body = response.body;
+  switch (contentEncoding) {
+    case 'gzip':
+      body = unzipSync(body);
+      break;
+    case 'br':
+      body = brotliDecompressSync(body);
+      break;
+    case 'deflate':
+      body = inflateSync(body);
+      break;
+    default:
+      break;
+  }
+
+  return body.toString('utf-8');
+};
+
+/**
  * Create a Transaction object from express req/res.
  * To be used after the response closes
  *
@@ -98,7 +128,7 @@ export const CreateTransaction = (
   response: {
     statusCode: response.statusCode,
     headers: TransformHeaders(response.getHeaders()).sort(AscSort),
-    body: response.body
+    body: DecompressBody(response)
   },
   routeResponseUUID: response.routeResponseUUID,
   routeUUID: response.routeUUID,
