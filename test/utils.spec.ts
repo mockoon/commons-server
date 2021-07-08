@@ -68,7 +68,7 @@ describe('Utils', () => {
       expect(DecompressBody(response as Response)).to.equal('plainTest');
     });
   });
-  
+
   describe('fromSafeString', () => {
     it('should return a string if input is a string', () => {
       const newString = fromSafeString('text');

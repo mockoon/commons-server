@@ -3,7 +3,8 @@ import { Request, Response } from 'express';
 import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
 import { URL } from 'url';
-import zlib from 'zlib';
+import { brotliDecompressSync, inflateSync, unzipSync } from 'zlib';
+
 /**
  * Transform http headers objects to Mockoon's Header key value object
  *
@@ -79,13 +80,13 @@ export const DecompressBody = (response: Response) => {
   let body = response.body;
   switch (contentEncoding) {
     case 'gzip':
-      body = zlib.unzipSync(body);
+      body = unzipSync(body);
       break;
     case 'br':
-      body = zlib.brotliDecompressSync(body);
+      body = brotliDecompressSync(body);
       break;
     case 'deflate':
-      body = zlib.inflateSync(body);
+      body = inflateSync(body);
       break;
     default:
       break;
