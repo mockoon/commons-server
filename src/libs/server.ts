@@ -364,7 +364,11 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
                     readFile(filePath, (readError, data) => {
                       try {
                         if (readError) {
-                          throw readError;
+                          if (enabledRouteResponse.fallbackTo404) {
+                            response.sendStatus(404);
+                          } else {
+                            throw readError;
+                          }
                         }
 
                         // parse templating for a limited list of mime types

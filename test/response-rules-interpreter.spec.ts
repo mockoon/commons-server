@@ -19,6 +19,7 @@ const routeResponse403: RouteResponse = {
   filePath: '',
   sendFileAsBody: false,
   disableTemplating: false,
+  fallbackTo404: false,
   rules: [],
   rulesOperator: 'OR'
 };
@@ -38,6 +39,7 @@ const routeResponseTemplate: RouteResponse = {
   filePath: '',
   sendFileAsBody: false,
   disableTemplating: false,
+  fallbackTo404: false,
   rules: [],
   rulesOperator: 'OR'
 };
