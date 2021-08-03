@@ -533,4 +533,319 @@ describe('Template parser', () => {
       expect(parseResult).to.be.equal('dmFsdWU6IDEyMw==');
     });
   });
+
+  describe('Helper: add', () => {
+    it('should add a number to another', () => {
+      const parseResult = TemplateParser('{{add 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('2');
+    });
+
+    it('should add the number described by a string to another number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{add '1' '1'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('2');
+    });
+
+    it('should return the base value when given a single parameter', () => {
+      const parseResult = TemplateParser('{{add 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{add }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should add the body property to the initial value', () => {
+      const parseResult = TemplateParser(
+        "{{add 1 (body 'prop1')}}",
+        {
+          bodyJSON: { prop1: '123' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('124');
+    });
+
+    it('should omit arguments that are NaN', () => {
+      const parseResult = TemplateParser(
+        "{{add '1' '2' 'dolphins' '3'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('6');
+    });
+  });
+
+  describe('Helper: subtract', () => {
+    it('should subtract a number to another', () => {
+      const parseResult = TemplateParser(
+        '{{subtract 1 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should subtract the number described by a string to another number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{subtract '1' '1'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return the base value when given a single parameter', () => {
+      const parseResult = TemplateParser(
+        '{{subtract 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{subtract }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should subtract the body property to the initial value', () => {
+      const parseResult = TemplateParser(
+        "{{subtract 1 (body 'prop1')}}",
+        {
+          bodyJSON: { prop1: '123' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('-122');
+    });
+
+    it('should omit arguments that are NaN', () => {
+      const parseResult = TemplateParser(
+        "{{subtract '6' '2' 'dolphins' '3'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+  });
+
+  describe('Helper: multiply', () => {
+    it('should multiply a number by another', () => {
+      const parseResult = TemplateParser(
+        '{{multiply 2 3}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('6');
+    });
+
+    it('should multiply the number described by a string by another number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{multiply '2' '3'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('6');
+    });
+
+    it('should return the base value when given a single parameter', () => {
+      const parseResult = TemplateParser(
+        '{{multiply 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{multiply }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should multiply the body property by the initial value', () => {
+      const parseResult = TemplateParser(
+        "{{multiply 2 (body 'prop1')}}",
+        {
+          bodyJSON: { prop1: '123' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('246');
+    });
+
+    it('should omit arguments that are NaN', () => {
+      const parseResult = TemplateParser(
+        "{{multiply '1' '2' 'dolphins' '3'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('6');
+    });
+  });
+
+  describe('Helper: divide', () => {
+    it('should divide a number by another', () => {
+      const parseResult = TemplateParser(
+        '{{divide 4 2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('2');
+    });
+
+    it('should divide the number described by a string by another number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{divide '6' '2'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('3');
+    });
+
+    it('should return the base value when given a single parameter', () => {
+      const parseResult = TemplateParser('{{divide 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{divide }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should divide the initial value by the body property', () => {
+      const parseResult = TemplateParser(
+        "{{divide 246 (body 'prop1')}}",
+        {
+          bodyJSON: { prop1: '123' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('2');
+    });
+
+    it('should return an emtpy string when attempting to divide by 0', () => {
+      const parseResult = TemplateParser(
+        "{{divide 5 '0' 5}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should omit arguments that are NaN', () => {
+      const parseResult = TemplateParser(
+        "{{divide '6' '2' 'dolphins' '3'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+  });
+
+  describe('Helper: modulo', () => {
+    it('should compute the modulo x of a number', () => {
+      const parseResult = TemplateParser(
+        '{{modulo 4 2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should compute the modulo x (passed as a string) of a number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{modulo '4' '2'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return an empty string when given a single parameter', () => {
+      const parseResult = TemplateParser('{{modulo 4}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{modulo }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should compute the modulo of the initial value by the body property', () => {
+      const parseResult = TemplateParser(
+        "{{modulo 4 (body 'prop1')}}",
+        {
+          bodyJSON: { prop1: '2' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return an empty string when attempting to compute modulo 0', () => {
+      const parseResult = TemplateParser(
+        '{{modulo 4 0}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('');
+    });
+  });
+
+  describe('Helper: ceil', () => {
+    it('should ceil a number', () => {
+      const parseResult = TemplateParser('{{ceil 0.5}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should ceil a number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{ceil '0.5'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return the base value when given an integer', () => {
+      const parseResult = TemplateParser('{{ceil 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{ceil }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+  });
+
+  describe('Helper: floor', () => {
+    it('should floor a number', () => {
+      const parseResult = TemplateParser('{{floor 0.5}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should floor a number described by a string', () => {
+      const parseResult = TemplateParser(
+        "{{floor '0.5'}}",
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return the base value when given an integer', () => {
+      const parseResult = TemplateParser('{{floor 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should return an empty string when given no arguments', () => {
+      const parseResult = TemplateParser('{{floor }}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+  });
 });
