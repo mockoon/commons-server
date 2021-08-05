@@ -53,6 +53,42 @@ export const RequestHelpers = function (
 
       return new SafeString(stringify ? JSON.stringify(value) : value);
     },
+
+    // get the raw json property from body to use with each for example
+    bodyRaw: function (...args: any[]) {
+      let path = '';
+      let defaultValue = '';
+      const parameters = args.slice(0, -1); // remove last item (handlebars options argument)
+
+      if (parameters.length === 1) {
+        path = parameters[0];
+      } else if (parameters.length >= 2) {
+        path = parameters[0];
+        defaultValue = parameters[1];
+      }
+      // if no path has been provided we want the full raw body as is
+      if (!path) {
+        return request.body;
+      }
+
+      let requestToParse;
+
+      if (request.bodyJSON) {
+        requestToParse = request.bodyJSON;
+      } else if (request.bodyForm) {
+        requestToParse = request.bodyForm;
+      }
+
+      if (!requestToParse) {
+        return defaultValue;
+      }
+
+      let value = objectGet(requestToParse, path);
+      value = value === undefined ? defaultValue : value;
+
+      return value;
+    },
+
     // use params from url /:param1/:param2
     urlParam: function (paramName: string) {
       return request.params[paramName];
@@ -98,6 +134,35 @@ export const RequestHelpers = function (
 
       return new SafeString(stringify ? JSON.stringify(value) : value);
     },
+
+    // use raw params from query string ?param1=xxx&param2=yyy
+    queryParamRaw: function (...args: any[]) {
+      let path = '';
+      let defaultValue = '';
+      const parameters = args.slice(0, -1); // remove last item (handlebars options argument)
+
+      if (parameters.length === 1) {
+        path = parameters[0];
+      } else if (parameters.length >= 2) {
+        path = parameters[0];
+        defaultValue = parameters[1];
+      }
+
+      if (!request.query) {
+        return defaultValue;
+      }
+
+      // if no path has been provided we want the full raw query string object as is
+      if (!path) {
+        return request.query;
+      }
+
+      let value = objectGet(request.query, path);
+      value = value === undefined ? defaultValue : value;
+
+      return value;
+    },
+
     // use content from request header
     header: function (headerName: string, defaultValue: string) {
       if (typeof defaultValue === 'object') {
