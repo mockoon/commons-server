@@ -481,5 +481,100 @@ export const Helpers = {
   // Handlebars hook when a helper is missing
   helperMissing: function () {
     return '';
+  },
+
+  // Maths helpers
+  add: function (...args: any[]) {
+    // Check if there are parameters
+    if (args.length === 1) {
+      return '';
+    }
+
+    return args.reduce((sum, item, index) => {
+      if (!isNaN(Number(fromSafeString(item))) && index !== args.length - 1) {
+        return Number(sum) + Number(item);
+      } else {
+        return Number(sum);
+      }
+    });
+  },
+
+  subtract: function (...args: any[]) {
+    // Check if there are parameters
+    if (args.length === 1) {
+      return '';
+    }
+
+    return args.reduce((sum, item, index) => {
+      if (!isNaN(Number(fromSafeString(item))) && index !== args.length - 1) {
+        return Number(sum) - Number(item);
+      } else {
+        return Number(sum);
+      }
+    });
+  },
+
+  multiply: function (...args: any[]) {
+    // Check if there are parameters
+    if (args.length === 1) {
+      return '';
+    }
+
+    return args.reduce((sum, item, index) => {
+      if (!isNaN(Number(fromSafeString(item))) && index !== args.length - 1) {
+        return Number(sum) * Number(item);
+      } else {
+        return Number(sum);
+      }
+    });
+  },
+
+  divide: function (...args: any[]) {
+    // Check if there are parameters
+    if (args.length === 1) {
+      return '';
+    }
+
+    return args.reduce((sum, item, index) => {
+      if (
+        !isNaN(Number(fromSafeString(item))) &&
+        index !== args.length - 1 &&
+        Number(item) !== 0
+      ) {
+        return Number(sum) / Number(item);
+      } else {
+        return Number(sum);
+      }
+    });
+  },
+
+  modulo: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+    // Check if there are parameters or if attempting to compute modulo 0
+    if (parameters.length <= 1 || Number(parameters[1]) === 0) {
+      return '';
+    }
+
+    return Number(parameters[0]) % Number(parameters[1]);
+  },
+
+  ceil: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+    // Check if there are parameters
+    if (parameters.length === 0) {
+      return '';
+    }
+
+    return Math.ceil(Number(parameters[0]));
+  },
+
+  floor: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+    // Check if there are parameters
+    if (parameters.length === 0) {
+      return '';
+    }
+
+    return Math.floor(Number(parameters[0]));
   }
 };
