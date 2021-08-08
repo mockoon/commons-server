@@ -279,8 +279,9 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       // only launch non duplicated routes, or ignore if none.
       if (declaredRoute.enabled) {
         try {
-          let routePath = `/${this.environment.endpointPrefix
-            }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
+          let routePath = `/${
+            this.environment.endpointPrefix
+          }/${declaredRoute.endpoint.replace(/ /g, '%20')}`;
 
           routePath = routePath.replace(/\/{2,}/g, '/');
 
@@ -362,12 +363,12 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
                     readFile(filePath, (readError, data) => {
                       try {
-
                         if (readError && !enabledRouteResponse.fallbackTo404) {
                           throw readError;
                         }
 
-                        const fallingBackTo404 = readError && enabledRouteResponse.fallbackTo404;
+                        const fallingBackTo404 =
+                          readError && enabledRouteResponse.fallbackTo404;
                         let body: string | undefined | Buffer = data;
 
                         if (fallingBackTo404) {
@@ -399,7 +400,6 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
                         } else {
                           response.send(body);
                         }
-
                       } catch (error) {
                         this.emit(
                           'error',
