@@ -363,8 +363,17 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
                     readFile(filePath, (readError, data) => {
                       try {
-                        if (readError) {
+                        if (readError && !enabledRouteResponse.fallbackTo404) {
                           throw readError;
+                        }
+
+                        const fallingBackTo404 =
+                          readError && enabledRouteResponse.fallbackTo404;
+                        let body: string | undefined | Buffer = data;
+
+                        if (fallingBackTo404) {
+                          body = enabledRouteResponse.body;
+                          response.status(404);
                         }
 
                         // parse templating for a limited list of mime types
@@ -372,16 +381,24 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
                           MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
                           !enabledRouteResponse.disableTemplating
                         ) {
+                          let bodyString = body || '';
+
+                          if (bodyString instanceof Buffer) {
+                            bodyString = bodyString.toString();
+                          }
+
                           const fileContent = TemplateParser(
-                            data.toString(),
+                            bodyString,
                             request,
                             this.environment
                           );
                           response.body = fileContent;
                           response.send(fileContent);
-                        } else {
+                        } else if (!fallingBackTo404) {
                           response.body = BINARY_BODY;
                           response.send(data);
+                        } else {
+                          response.send(body);
                         }
                       } catch (error) {
                         this.emit(
