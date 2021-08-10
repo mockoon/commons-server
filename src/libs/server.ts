@@ -9,6 +9,7 @@ import {
   MimeTypesWithTemplating,
   MockoonServerOptions,
   Route,
+  RouteResponse,
   ServerErrorCodes,
   ServerEvents,
   TestHeaderValidity
@@ -339,110 +340,20 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
                   request
                 );
 
-                try {
-                  // send the file
-                  if (enabledRouteResponse.filePath) {
-                    const filePath = TemplateParser(
-                      enabledRouteResponse.filePath.replace(/\\/g, '/'),
-                      request,
-                      this.environment
-                    );
-                    const fileMimeType = mimeTypeLookup(filePath) || '';
-
-                    // set content-type to route response's one or the detected mime type if none
-                    if (!routeContentType) {
-                      response.set('Content-Type', fileMimeType);
-                    }
-
-                    if (!enabledRouteResponse.sendFileAsBody) {
-                      response.set(
-                        'Content-Disposition',
-                        `attachment; filename="${basename(filePath)}"`
-                      );
-                    }
-
-                    readFile(filePath, (readError, data) => {
-                      try {
-                        if (readError && !enabledRouteResponse.fallbackTo404) {
-                          throw readError;
-                        }
-
-                        const fallingBackTo404 =
-                          readError && enabledRouteResponse.fallbackTo404;
-                        let body: string | undefined | Buffer = data;
-
-                        if (fallingBackTo404) {
-                          body = enabledRouteResponse.body;
-                          response.status(404);
-                        }
-
-                        // parse templating for a limited list of mime types
-                        if (
-                          MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
-                          !enabledRouteResponse.disableTemplating
-                        ) {
-                          let bodyString = body || '';
-
-                          if (bodyString instanceof Buffer) {
-                            bodyString = bodyString.toString();
-                          }
-
-                          const fileContent = TemplateParser(
-                            bodyString,
-                            request,
-                            this.environment
-                          );
-                          response.body = fileContent;
-                          response.send(fileContent);
-                        } else if (!fallingBackTo404) {
-                          response.body = BINARY_BODY;
-                          response.send(data);
-                        } else {
-                          response.send(body);
-                        }
-                      } catch (error) {
-                        this.emit(
-                          'error',
-                          ServerErrorCodes.ROUTE_FILE_SERVING_ERROR,
-                          error
-                        );
-
-                        this.sendError(
-                          response,
-                          `${Texts.EN.MESSAGES.ROUTE_FILE_SERVING_ERROR}${error.message}`
-                        );
-                      }
-                    });
-                  } else {
-                    if (contentType.includes('application/json')) {
-                      response.set('Content-Type', 'application/json');
-                    }
-
-                    let body = enabledRouteResponse.body;
-
-                    if (!enabledRouteResponse.disableTemplating) {
-                      body = TemplateParser(
-                        body || '',
-                        request,
-                        this.environment
-                      );
-                    }
-
-                    response.body = body;
-
-                    response.send(body);
+                // send the file
+                if (enabledRouteResponse.filePath) {
+                  this.sendFile(
+                    enabledRouteResponse,
+                    routeContentType,
+                    request,
+                    response
+                  );
+                } else {
+                  if (contentType.includes('application/json')) {
+                    response.set('Content-Type', 'application/json');
                   }
-                } catch (error) {
-                  this.emit(
-                    'error',
-                    ServerErrorCodes.ROUTE_SERVING_ERROR,
-                    error
-                  );
 
-                  this.sendError(
-                    response,
-                    `${Texts.EN.MESSAGES.ROUTE_SERVING_ERROR}${error.message}`
-                  );
+                  this.serveBody(enabledRouteResponse, request, response);
                 }
               }, enabledRouteResponse.latency);
             }
@@ -459,6 +370,120 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
         }
       }
     });
+  }
+
+  /**
+   * Parse the body templating and send it as the response body
+   *
+   * @param routeResponse
+   * @param request
+   * @param response
+   */
+  private serveBody(
+    routeResponse: RouteResponse,
+    request: Request,
+    response: Response
+  ) {
+    try {
+      let body = routeResponse.body;
+
+      if (!routeResponse.disableTemplating) {
+        body = TemplateParser(body || '', request, this.environment);
+      }
+
+      response.body = body;
+
+      response.send(body);
+    } catch (error) {
+      this.emit('error', ServerErrorCodes.ROUTE_SERVING_ERROR, error);
+
+      this.sendError(
+        response,
+        `${Texts.EN.MESSAGES.ROUTE_SERVING_ERROR}${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Send a file as response body.
+   * Revert to sendBody if file is not found.
+   *
+   * @param routeResponse
+   * @param routeContentType
+   * @param request
+   * @param response
+   */
+  private sendFile(
+    routeResponse: RouteResponse,
+    routeContentType: string | null,
+    request: Request,
+    response: Response
+  ) {
+    try {
+      const filePath = TemplateParser(
+        routeResponse.filePath.replace(/\\/g, '/'),
+        request,
+        this.environment
+      );
+
+      readFile(filePath, (readError, data) => {
+        try {
+          if (readError && !routeResponse.fallbackTo404) {
+            throw readError;
+          } else if (readError && routeResponse.fallbackTo404) {
+            response.status(404);
+            this.serveBody(routeResponse, request, response);
+
+            return;
+          }
+
+          const fileMimeType = mimeTypeLookup(filePath) || '';
+
+          // set content-type to route response's one or the detected mime type if none
+          if (!routeContentType) {
+            response.set('Content-Type', fileMimeType);
+          }
+
+          if (!routeResponse.sendFileAsBody) {
+            response.set(
+              'Content-Disposition',
+              `attachment; filename="${basename(filePath)}"`
+            );
+          }
+
+          // parse templating for a limited list of mime types
+          if (
+            MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
+            !routeResponse.disableTemplating
+          ) {
+            const fileContent = TemplateParser(
+              data.toString(),
+              request,
+              this.environment
+            );
+            response.body = fileContent;
+            response.send(fileContent);
+          } else {
+            response.body = BINARY_BODY;
+            response.send(data);
+          }
+        } catch (error) {
+          this.emit('error', ServerErrorCodes.ROUTE_FILE_SERVING_ERROR, error);
+
+          this.sendError(
+            response,
+            `${Texts.EN.MESSAGES.ROUTE_FILE_SERVING_ERROR}${error.message}`
+          );
+        }
+      });
+    } catch (error) {
+      this.emit('error', ServerErrorCodes.ROUTE_SERVING_ERROR, error);
+
+      this.sendError(
+        response,
+        `${Texts.EN.MESSAGES.ROUTE_SERVING_ERROR}${error.message}`
+      );
+    }
   }
 
   /**
