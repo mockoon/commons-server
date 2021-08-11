@@ -294,6 +294,31 @@ export const Helpers = {
       return data.substr(fromValue);
     }
   },
+
+  // Split a string, default separator is " "
+  split: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+    if (parameters.length === 0) {
+      return '';
+    }
+
+    const data = parameters[0];
+    let separator;
+    if (parameters.length >= 2) {
+      separator = parameters[1];
+    }
+
+    if (!separator || typeof separator !== 'string') {
+      separator = ' ';
+    }
+
+    if (!data || typeof data !== 'string') {
+      return '';
+    }
+
+    return data.split(separator);
+  },
+
   // set a variable to be used in the template
   setVar: function (
     name: string,

@@ -344,6 +344,68 @@ describe('Template parser', () => {
     });
   });
 
+  describe('Helper: split', () => {
+    it('should split a string using spaces as separator', () => {
+      const parseResult = TemplateParser(
+        '{{split "I love dolphins" " "}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('I,love,dolphins');
+    });
+
+    it('should split a string using commas', () => {
+      const parseResult = TemplateParser(
+        '{{split "I too, love dolphins" ","}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('I too, love dolphins');
+    });
+
+    it('should split a string using spaces by default', () => {
+      const parseResult = TemplateParser(
+        '{{split "I love dolphins"}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('I,love,dolphins');
+    });
+
+    it('should split a string using spaces when given anything else but a string as separator', () => {
+      const parseResult = TemplateParser(
+        '{{split "I love dolphins" 123}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('I,love,dolphins');
+    });
+
+    it('should return an empty string when given anything else but a string as data', () => {
+      const parseResult = TemplateParser(
+        '{{split 123 ","}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should be usable whithin a #each', () => {
+      const parseResult = TemplateParser(
+        '{{#each (split "1 2 3" " ")}}dolphin,{{/each}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('dolphin,dolphin,dolphin,');
+    });
+  });
+
   describe('Helper: indexOf', () => {
     it('should return the index of a matching substring', () => {
       const parseResult = TemplateParser(
