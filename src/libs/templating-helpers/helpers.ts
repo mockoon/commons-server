@@ -299,7 +299,7 @@ export const Helpers = {
   split: function (...args: any[]) {
     const parameters = args.slice(0, -1);
     if (parameters.length === 0) {
-      return;
+      return '';
     }
 
     const data = parameters[0];
@@ -313,7 +313,7 @@ export const Helpers = {
     }
 
     if (!data || typeof data !== 'string') {
-      return;
+      return '';
     }
 
     return data.split(separator);
