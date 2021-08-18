@@ -31,7 +31,7 @@ import {
 } from 'https';
 import killable from 'killable';
 import { lookup as mimeTypeLookup } from 'mime-types';
-import { basename } from 'path';
+import { basename, isAbsolute, resolve } from 'path';
 import { parse as qsParse } from 'qs';
 import TypedEmitter from 'typed-emitter';
 import { DefaultSSLConfig } from '../constants/ssl.constants';
@@ -426,7 +426,19 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
         this.environment
       );
 
-      readFile(filePath, (readError, data) => {
+      let processedFilePath: string;
+      if (!this.options.environmentDirectory) {
+        processedFilePath = filePath;
+      } else if (isAbsolute(filePath)) {
+        processedFilePath = filePath;
+      } else {
+        processedFilePath = resolve(
+          this.options.environmentDirectory,
+          filePath
+        );
+      }
+
+      readFile(processedFilePath, (readError, data) => {
         try {
           if (readError && !routeResponse.fallbackTo404) {
             throw readError;
