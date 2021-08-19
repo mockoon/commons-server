@@ -2,6 +2,7 @@ import { ResponseRuleTargets, RouteResponse } from '@mockoon/commons';
 import { expect } from 'chai';
 import { Request } from 'express';
 import QueryString from 'qs';
+import { xml2js } from 'xml-js';
 import { ResponseRulesInterpreter } from '../src/libs/response-rules-interpreter';
 
 const routeResponse403: RouteResponse = {
@@ -956,6 +957,9 @@ describe('Response rules interpreter', () => {
   });
 
   describe('Body rules', () => {
+    const xmlBody =
+      '<?xml version="1.0" encoding="utf-8"?><user userId="1"><name>John</name></user>';
+
     it('should return response if full body value matches (no modifier + regex)', () => {
       const request: Request = {
         header: function (headerName: string) {
@@ -1070,7 +1074,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"name": "john"}'
+        body: '{"name": "john"}',
+        parsedBody: { name: 'john' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1105,7 +1110,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "user": [{ "name": "John" }] }'
+        body: '{ "user": [{ "name": "John" }] }',
+        parsedBody: { user: [{ name: 'John' }] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1140,7 +1146,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "user": [{ "name": "John" }] }'
+        body: '{ "user": [{ "name": "John" }] }',
+        parsedBody: { user: [{ name: 'John' }] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1175,7 +1182,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "users": ["John", "Johnny", "Paul"] }'
+        body: '{ "users": ["John", "Johnny", "Paul"] }',
+        parsedBody: { users: ['John', 'Johnny', 'Paul'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1210,7 +1218,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "users": ["John", "Johnny", "Paul"] }'
+        body: '{ "users": ["John", "Johnny", "Paul"] }',
+        parsedBody: { users: ['John', 'Johnny', 'Paul'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1245,7 +1254,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "test" }'
+        body: '{ "test": "test" }',
+        parsedBody: { test: 'test' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1280,7 +1290,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": 1 }'
+        body: '{ "test": 1 }',
+        parsedBody: { test: 1 }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1315,7 +1326,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": false }'
+        body: '{ "test": false }',
+        parsedBody: { test: false }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1350,7 +1362,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'param1=value1'
+        body: 'param1=value1',
+        parsedBody: { param1: 'value1' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1385,7 +1398,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'param1=value1'
+        body: 'param1=value1',
+        parsedBody: { param1: 'value1' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1420,7 +1434,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'params[]=value1&params[]=value2'
+        body: 'params[]=value1&params[]=value2',
+        parsedBody: { params: ['value1', 'value2'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1455,7 +1470,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'params[prop1]=value1&params[prop2]=value2'
+        body: 'params[prop1]=value1&params[prop2]=value2',
+        parsedBody: { params: { prop1: 'value1', prop2: 'value2' } }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1560,7 +1576,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"prop1": null}'
+        body: '{"prop1": null}',
+        parsedBody: { prop1: null }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1595,7 +1612,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"prop1": null}'
+        body: '{"prop1": null}',
+        parsedBody: { prop1: null }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1620,8 +1638,118 @@ describe('Response rules interpreter', () => {
       ).chooseResponse(1);
       expect(routeResponse.body).to.be.equal('body19');
     });
-  });
 
+    it('should return response if XML body property value matches', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/xml',
+            'Test-Header': 'headervalue'
+          };
+
+          return headers[headerName];
+        },
+        body: xmlBody,
+        parsedBody: xml2js(xmlBody, { compact: true })
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'body',
+                modifier: 'user.name._text',
+                value: 'John',
+                isRegex: false
+              } as any
+            ],
+            body: 'body20'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('body20');
+    });
+
+    it('should return response if XML body attribute value matches', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/xml',
+            'Test-Header': 'headervalue'
+          };
+
+          return headers[headerName];
+        },
+        body: xmlBody,
+        parsedBody: xml2js(xmlBody, { compact: true })
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'body',
+                modifier: 'user._attributes.userId',
+                value: '1',
+                isRegex: false
+              } as any
+            ],
+            body: 'body21'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('body21');
+    });
+
+    it('should return response if XML initial tag attribute value matches', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/xml',
+            'Test-Header': 'headervalue'
+          };
+
+          return headers[headerName];
+        },
+        body: xmlBody,
+        parsedBody: xml2js(xmlBody, { compact: true })
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'body',
+                modifier: '_declaration._attributes.version',
+                value: '1.0',
+                isRegex: false
+              } as any
+            ],
+            body: 'body21'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('body21');
+    });
+  });
   describe('Complex rules (AND/OR)', () => {
     it('should return response if both rules match', () => {
       const request: Request = {
@@ -1633,7 +1761,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }'
+        body: '{ "test": "bodyvalue" }',
+        parsedBody: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1719,7 +1848,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }'
+        body: '{ "test": "bodyvalue" }',
+        parsedBody: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1810,7 +1940,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }'
+        body: '{ "test": "bodyvalue" }',
+        parsedBody: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(

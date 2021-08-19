@@ -5,7 +5,7 @@ import {
 } from '@mockoon/commons';
 import { Request } from 'express';
 import { get as objectPathGet } from 'object-path';
-import { parse as qsParse, ParsedQs } from 'qs';
+import { ParsedQs } from 'qs';
 
 /**
  * Interpretor for the route response rules.
@@ -132,16 +132,15 @@ export class ResponseRulesInterpreter {
     const requestContentType = this.request.header('Content-Type');
     let body: ParsedQs | JSON = {};
 
-    try {
-      if (requestContentType) {
-        if (requestContentType.includes('application/x-www-form-urlencoded')) {
-          body = qsParse(this.request.body);
-        } else if (requestContentType.includes('application/json')) {
-          body = JSON.parse(this.request.body);
-        }
+    if (requestContentType) {
+      if (
+        requestContentType.includes('application/x-www-form-urlencoded') ||
+        requestContentType.includes('application/json') ||
+        requestContentType.includes('application/xml') ||
+        requestContentType.includes('text/xml')
+      ) {
+        body = this.request.parsedBody;
       }
-    } catch (e) {
-      body = {};
     }
 
     this.targets = {
