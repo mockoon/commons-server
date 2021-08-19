@@ -32,13 +32,9 @@ export const RequestHelpers = function (
 
       let requestToParse;
 
-      if (request.bodyJSON) {
-        requestToParse = request.bodyJSON;
-      } else if (request.bodyForm) {
-        requestToParse = request.bodyForm;
-      }
-
-      if (!requestToParse) {
+      if (request.parsedBody) {
+        requestToParse = request.parsedBody;
+      } else {
         return new SafeString(
           stringify ? JSON.stringify(defaultValue) : defaultValue
         );
@@ -73,13 +69,9 @@ export const RequestHelpers = function (
 
       let requestToParse;
 
-      if (request.bodyJSON) {
-        requestToParse = request.bodyJSON;
-      } else if (request.bodyForm) {
-        requestToParse = request.bodyForm;
-      }
-
-      if (!requestToParse) {
+      if (request.parsedBody) {
+        requestToParse = request.parsedBody;
+      } else {
         return defaultValue;
       }
 

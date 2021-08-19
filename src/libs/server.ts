@@ -34,6 +34,7 @@ import { lookup as mimeTypeLookup } from 'mime-types';
 import { basename, isAbsolute, resolve } from 'path';
 import { parse as qsParse } from 'qs';
 import TypedEmitter from 'typed-emitter';
+import { xml2js } from 'xml-js';
 import { DefaultSSLConfig } from '../constants/ssl.constants';
 import { Texts } from '../i18n/en';
 import { ResponseRulesInterpreter } from './response-rules-interpreter';
@@ -215,12 +216,19 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       try {
         if (requestContentType) {
           if (requestContentType.includes('application/json')) {
-            request.bodyJSON = JSON.parse(request.body);
+            request.parsedBody = JSON.parse(request.body);
           } else if (
             requestContentType.includes('application/x-www-form-urlencoded')
           ) {
-            request.bodyForm = qsParse(request.body, {
+            request.parsedBody = qsParse(request.body, {
               depth: 10
+            });
+          } else if (
+            requestContentType.includes('application/xml') ||
+            requestContentType.includes('text/xml')
+          ) {
+            request.parsedBody = xml2js(request.body, {
+              compact: true
             });
           }
         }

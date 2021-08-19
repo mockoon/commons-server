@@ -17,7 +17,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined true}}",
         {
-          bodyJSON: { prop1: 1 }
+          parsedBody: { prop1: 1 }
         } as any,
         {} as any
       );
@@ -28,7 +28,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined true}}",
         {
-          bodyJSON: { prop1: true }
+          parsedBody: { prop1: true }
         } as any,
         {} as any
       );
@@ -39,7 +39,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined true}}",
         {
-          bodyJSON: { prop1: null }
+          parsedBody: { prop1: null }
         } as any,
         {} as any
       );
@@ -50,7 +50,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined false}}",
         {
-          bodyJSON: { prop1: ['first', 'second'] }
+          parsedBody: { prop1: ['first', 'second'] }
         } as any,
         {} as any
       );
@@ -61,7 +61,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined false}}",
         {
-          bodyJSON: { prop1: { key: 'value' } }
+          parsedBody: { prop1: { key: 'value' } }
         } as any,
         {} as any
       );
@@ -72,7 +72,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop2' 'default' true}}",
         {
-          bodyJSON: { prop1: 'test' }
+          parsedBody: { prop1: 'test' }
         } as any,
         {} as any
       );
@@ -83,7 +83,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined true}}",
         {
-          bodyJSON: { prop1: 'test' }
+          parsedBody: { prop1: 'test' }
         } as any,
         {} as any
       );
@@ -94,7 +94,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1'}}",
         {
-          bodyJSON: { prop1: 'test' }
+          parsedBody: { prop1: 'test' }
         } as any,
         {} as any
       );
@@ -105,7 +105,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{body 'prop1' undefined true}}",
         {
-          bodyJSON: { prop1: 'This \n is a "message" with quotes.' }
+          parsedBody: { prop1: 'This \n is a "message" with quotes.' }
         } as any,
         {} as any
       );
@@ -120,7 +120,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{bodyRaw 'prop'}}",
         {
-          bodyJSON: { prop: 1 }
+          parsedBody: { prop: 1 }
         } as any,
         {} as any
       );
@@ -130,7 +130,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{bodyRaw 'prop'}}",
         {
-          bodyJSON: { prop: [1, 2, 3] }
+          parsedBody: { prop: [1, 2, 3] }
         } as any,
         {} as any
       );
@@ -140,7 +140,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{bodyRaw 'prop'}}",
         {
-          bodyJSON: { prop: true }
+          parsedBody: { prop: true }
         } as any,
         {} as any
       );
@@ -150,7 +150,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{#each (bodyRaw 'myList')}}dolphin{{/each}}",
         {
-          bodyJSON: {
+          parsedBody: {
             prop: '1',
             myList: [1, 2, 3],
             boolean: true
@@ -164,7 +164,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{#if (bodyRaw 'boolean')}}dolphin{{/if}}",
         {
-          bodyJSON: {
+          parsedBody: {
             prop: '1',
             myList: [1, 2, 3],
             boolean: true
