@@ -95,6 +95,15 @@ export class ResponseRulesInterpreter {
       }
     }
 
+    if (rule.isEmpty && rule.modifier) {
+      if(value === null || value === undefined ) {
+        return true;
+      }
+      if(rule.value && rule.value.toLowerCase() === 'array') {
+        return Array.isArray(value) && value.length < 1;
+      }
+    }
+
     if (value === undefined) {
       return false;
     }
@@ -110,6 +119,9 @@ export class ResponseRulesInterpreter {
     }
 
     let regex: RegExp;
+
+
+
     if (rule.isRegex) {
       regex = new RegExp(rule.value);
 

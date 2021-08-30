@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Request } from 'express';
 import QueryString from 'qs';
 import { xml2js } from 'xml-js';
-import { ResponseRulesInterpreter } from '../src/libs/response-rules-interpreter';
+import { ResponseRulesInterpreter } from '../../src/libs/response-rules-interpreter';
 
 const routeResponse403: RouteResponse = {
   uuid: '',
@@ -88,7 +88,8 @@ describe('Response rules interpreter', () => {
               target: '' as ResponseRuleTargets,
               modifier: 'prop',
               value: 'value',
-              isRegex: false
+              isRegex: false,
+              isEmpty: false
             }
           ],
           body: 'invalid'
@@ -124,7 +125,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'obj.prop',
                 value: '^value',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'query1'
@@ -159,7 +161,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'obj.prop',
                 value: 'val',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'query2'
@@ -194,7 +197,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'obj.prop',
                 value: 'value',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'query3'
@@ -229,7 +233,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'array',
                 value: 'test1|test2',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'query4'
@@ -264,7 +269,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'array',
                 value: 'test2',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'query5'
@@ -299,7 +305,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: '',
                 value: 'value',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'query6'
@@ -334,7 +341,8 @@ describe('Response rules interpreter', () => {
                 target: 'query',
                 modifier: 'prop',
                 value: 'value',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'query7'
@@ -346,6 +354,42 @@ describe('Response rules interpreter', () => {
       ).chooseResponse(1);
 
       expect(routeResponse.body).to.be.equal('unauthorized');
+    });
+
+    it('should return response if isEmpty is checked and no value query param was given', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = { 'Content-Type': 'application/json' };
+
+          return headers[headerName];
+        },
+        body: '',
+        query: { prop: undefined } as QueryString.ParsedQs
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'query',
+                modifier: 'shouldNotBeSet',
+                value: '',
+                isRegex: false,
+                isEmpty: true
+              }
+            ],
+            body: 'query7'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+
+      expect(routeResponse.body).to.be.equal('query7');
     });
   });
 
@@ -371,7 +415,8 @@ describe('Response rules interpreter', () => {
                 target: 'params',
                 modifier: 'id',
                 value: '^1',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'params1'
@@ -405,7 +450,8 @@ describe('Response rules interpreter', () => {
                 target: 'params',
                 modifier: 'id',
                 value: '111',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'params2'
@@ -439,7 +485,8 @@ describe('Response rules interpreter', () => {
                 target: 'params',
                 modifier: '',
                 value: '111',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'params3'
@@ -473,7 +520,8 @@ describe('Response rules interpreter', () => {
                 target: 'params',
                 modifier: '',
                 value: '11',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'params4'
@@ -507,7 +555,8 @@ describe('Response rules interpreter', () => {
                 target: 'params',
                 modifier: '',
                 value: '11',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'params5'
@@ -545,7 +594,8 @@ describe('Response rules interpreter', () => {
                 target: 'request_number',
                 modifier: '',
                 value: '1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'request_number_1'
@@ -558,7 +608,7 @@ describe('Response rules interpreter', () => {
       expect(routeResponse.body).to.be.equal('request_number_1');
     });
 
-    it("should not return response if request number don't matches", () => {
+    it('should not return response if request number don\'t matches', () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
@@ -581,7 +631,8 @@ describe('Response rules interpreter', () => {
                 target: 'request_number',
                 modifier: '',
                 value: '1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'request_number_1'
@@ -617,7 +668,8 @@ describe('Response rules interpreter', () => {
                 target: 'request_number',
                 modifier: '',
                 value: '^[1-9][0-9]?$|^100$',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'request_number_regex'
@@ -630,7 +682,7 @@ describe('Response rules interpreter', () => {
       expect(routeResponse.body).to.be.equal('request_number_regex');
     });
 
-    it("should not return response if request don't matches regex", () => {
+    it('should not return response if request don\'t matches regex', () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
@@ -653,7 +705,8 @@ describe('Response rules interpreter', () => {
                 target: 'request_number',
                 modifier: '',
                 value: '^[1-9][0-9]?$|^100$',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'request_number_regex'
@@ -689,13 +742,15 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: 'Authorization',
                 value: '^$|s+',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               },
               {
                 target: 'request_number',
                 modifier: '',
                 value: '1|2',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             rulesOperator: 'AND',
@@ -798,7 +853,8 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: 'Accept-Charset',
                 value: '^UTF',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'header1'
@@ -834,7 +890,8 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: 'Accept-Charset',
                 value: 'UTF-8',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'header2'
@@ -870,7 +927,8 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: 'Accept-Charset',
                 value: 'UTF-16',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'header3'
@@ -906,7 +964,8 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: 'Accept-Charset',
                 value: 'UTF-16',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'header4'
@@ -942,7 +1001,8 @@ describe('Response rules interpreter', () => {
                 target: 'header',
                 modifier: '',
                 value: 'UTF-8',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'header5'
@@ -982,7 +1042,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '',
                 value: 'value',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'body1'
@@ -1017,7 +1078,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body2'
@@ -1052,7 +1114,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '',
                 value: 'body',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body3'
@@ -1088,7 +1151,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'name',
                 value: 'john',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body4'
@@ -1124,7 +1188,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'user.0.name',
                 value: 'John',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body5'
@@ -1160,7 +1225,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'user.0.name',
                 value: '^John',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'body6'
@@ -1196,7 +1262,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'users',
                 value: 'John',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body7'
@@ -1232,7 +1299,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'users',
                 value: '^John',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'body8'
@@ -1268,7 +1336,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'test',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body9'
@@ -1304,7 +1373,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: '1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body10'
@@ -1340,7 +1410,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'false',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body11'
@@ -1376,7 +1447,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'param1',
                 value: 'value1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body12'
@@ -1412,7 +1484,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'param1',
                 value: '^value',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'body13'
@@ -1448,7 +1521,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'params',
                 value: 'value2',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body14'
@@ -1484,7 +1558,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'params.prop2',
                 value: 'value2',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body15'
@@ -1519,7 +1594,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body16'
@@ -1554,7 +1630,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '',
                 value: 'value',
-                isRegex: true
+                isRegex: true,
+                isEmpty: false
               }
             ],
             body: 'body17'
@@ -1590,7 +1667,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'prop1',
                 value: '',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             body: 'body19'
@@ -1626,7 +1704,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'prop1',
                 value: null,
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               } as any
             ],
             body: 'body19'
@@ -1663,7 +1742,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'user.name._text',
                 value: 'John',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               } as any
             ],
             body: 'body20'
@@ -1700,7 +1780,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'user._attributes.userId',
                 value: '1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               } as any
             ],
             body: 'body21'
@@ -1737,7 +1818,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: '_declaration._attributes.version',
                 value: '1.0',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               } as any
             ],
             body: 'body21'
@@ -1775,13 +1857,15 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               },
               {
                 target: 'header',
                 modifier: 'Test-Header',
                 value: 'headervalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             rulesOperator: 'AND',
@@ -1818,13 +1902,15 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               },
               {
                 target: 'header',
                 modifier: 'Test-Header',
                 value: 'headervalue1',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             rulesOperator: 'AND',
@@ -1862,13 +1948,15 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               },
               {
                 target: 'header',
                 modifier: 'Test-Header',
                 value: 'headervalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             rulesOperator: 'OR',
@@ -1905,13 +1993,15 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               },
               {
                 target: 'header',
                 modifier: 'Test-Header',
                 value: 'headervalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             rulesOperator: 'OR',
@@ -1959,7 +2049,8 @@ describe('Response rules interpreter', () => {
                 target: 'body',
                 modifier: 'test',
                 value: 'bodyvalue',
-                isRegex: false
+                isRegex: false,
+                isEmpty: false
               }
             ],
             rulesOperator: 'OR',
