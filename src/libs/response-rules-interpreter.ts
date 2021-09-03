@@ -14,8 +14,7 @@ import { ParsedQs } from 'qs';
  */
 export class ResponseRulesInterpreter {
   private targets: {
-    [key in
-      | Exclude<ResponseRuleTargets, 'header' | 'request_number'>
+    [key in | Exclude<ResponseRuleTargets, 'header' | 'request_number'>
       | 'bodyRaw']: any;
   };
 
@@ -43,8 +42,8 @@ export class ResponseRulesInterpreter {
 
     if (this.sequentialResponse) {
       return this.routeResponses[
-        (requestNumber - 1) % this.routeResponses.length
-      ];
+      (requestNumber - 1) % this.routeResponses.length
+        ];
     } else {
       let response = this.routeResponses.find((routeResponse) => {
         if (routeResponse.rules.length === 0) {
@@ -53,11 +52,11 @@ export class ResponseRulesInterpreter {
 
         return routeResponse.rulesOperator === 'AND'
           ? routeResponse.rules.every((rule) =>
-              this.isValidRule(rule, requestNumber)
-            )
+            this.isValidRule(rule, requestNumber)
+          )
           : routeResponse.rules.some((rule) =>
-              this.isValidRule(rule, requestNumber)
-            );
+            this.isValidRule(rule, requestNumber)
+          );
       });
 
       if (response === undefined) {
@@ -95,13 +94,12 @@ export class ResponseRulesInterpreter {
       }
     }
 
-    if (rule.isEmpty && rule.modifier) {
-      if(value === null || value === undefined ) {
-        return true;
-      }
-      if(rule.value && rule.value.toLowerCase() === 'array') {
+    if (rule.operator === 'null' && rule.modifier) {
+      return (value === null || value === undefined);
+    }
+
+    if (rule.operator === 'empty_array' && rule.modifier) {
         return Array.isArray(value) && value.length < 1;
-      }
     }
 
     if (value === undefined) {
@@ -121,8 +119,7 @@ export class ResponseRulesInterpreter {
     let regex: RegExp;
 
 
-
-    if (rule.isRegex) {
+    if (rule.operator === 'regex') {
       regex = new RegExp(rule.value);
 
       return Array.isArray(value)
