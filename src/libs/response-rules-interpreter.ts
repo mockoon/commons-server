@@ -95,6 +95,14 @@ export class ResponseRulesInterpreter {
       }
     }
 
+    if (rule.operator === 'null' && rule.modifier) {
+      return value === null || value === undefined;
+    }
+
+    if (rule.operator === 'empty_array' && rule.modifier) {
+      return Array.isArray(value) && value.length < 1;
+    }
+
     if (value === undefined) {
       return false;
     }
@@ -110,7 +118,8 @@ export class ResponseRulesInterpreter {
     }
 
     let regex: RegExp;
-    if (rule.isRegex) {
+
+    if (rule.operator === 'regex') {
       regex = new RegExp(rule.value);
 
       return Array.isArray(value)

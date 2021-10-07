@@ -18,12 +18,7 @@ import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
 import express, { Application, NextFunction, Request, Response } from 'express';
 import { readFile } from 'fs';
-import {
-  ClientRequest,
-  createServer as httpCreateServer,
-  IncomingMessage,
-  Server as httpServer
-} from 'http';
+import { createServer as httpCreateServer, Server as httpServer } from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
   createServer as httpsCreateServer,
@@ -78,7 +73,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     this.serverInstance.setTimeout(3_600_000);
 
     // handle server errors
-    this.serverInstance.on('error', (error) => {
+    this.serverInstance.on('error', (error: NodeJS.ErrnoException) => {
       let errorCode: ServerErrorCodes;
 
       switch (error.code) {
@@ -232,7 +227,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             });
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         this.emit('error', ServerErrorCodes.REQUEST_BODY_PARSE, error);
       }
 
@@ -366,7 +361,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
               }, enabledRouteResponse.latency);
             }
           );
-        } catch (error) {
+        } catch (error: any) {
           let errorCode = ServerErrorCodes.ROUTE_CREATION_ERROR;
 
           // if invalid regex defined
@@ -402,7 +397,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       response.body = body;
 
       response.send(body);
-    } catch (error) {
+    } catch (error: any) {
       this.emit('error', ServerErrorCodes.ROUTE_SERVING_ERROR, error);
 
       this.sendError(
@@ -487,7 +482,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             response.body = BINARY_BODY;
             response.send(data);
           }
-        } catch (error) {
+        } catch (error: any) {
           this.emit('error', ServerErrorCodes.ROUTE_FILE_SERVING_ERROR, error);
 
           this.sendError(
@@ -496,7 +491,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           );
         }
       });
-    } catch (error) {
+    } catch (error: any) {
       this.emit('error', ServerErrorCodes.ROUTE_SERVING_ERROR, error);
 
       this.sendError(
@@ -552,11 +547,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           changeOrigin: true,
           logProvider: this.options.logProvider,
           ssl: { ...DefaultSSLConfig, agent: false },
-          onProxyReq: (
-            proxyReq: ClientRequest,
-            request: Request,
-            response: Response
-          ) => {
+          onProxyReq: (proxyReq, request, response) => {
             this.refreshEnvironment();
 
             request.proxied = true;
@@ -564,7 +555,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             this.setHeaders(
               this.environment.proxyReqHeaders,
               proxyReq,
-              request
+              request as Request
             );
 
             if (
@@ -580,11 +571,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
               proxyReq.write(request.rawBody);
             }
           },
-          onProxyRes: (
-            proxyRes: IncomingMessage,
-            request: Request,
-            response: Response
-          ) => {
+          onProxyRes: (proxyRes, request, response) => {
             this.refreshEnvironment();
 
             const buffers: Buffer[] = [];
@@ -598,13 +585,13 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             this.setHeaders(
               this.environment.proxyResHeaders,
               proxyRes,
-              request
+              request as Request
             );
           },
-          onError: (error: Error, request: Request, response: Response) => {
+          onError: (error, request, response) => {
             this.emit('error', ServerErrorCodes.PROXY_ERROR, error);
             this.sendError(
-              response,
+              response as Response,
               `${Texts.EN.MESSAGES.PROXY_ERROR}${this.environment.proxyHost}${request.url}: ${error}`,
               504
             );
