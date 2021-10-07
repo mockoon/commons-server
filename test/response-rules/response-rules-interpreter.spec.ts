@@ -391,7 +391,7 @@ describe('Response rules interpreter', () => {
           return headers[headerName];
         },
         body: '',
-        query: { prop: undefined, examples: []} as QueryString.ParsedQs
+        query: { prop: undefined, examples: [] } as QueryString.ParsedQs
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -628,7 +628,7 @@ describe('Response rules interpreter', () => {
       expect(routeResponse.body).to.be.equal('request_number_1');
     });
 
-    it('should not return response if request number don\'t matches', () => {
+    it("should not return response if request number don't matches", () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
@@ -700,7 +700,7 @@ describe('Response rules interpreter', () => {
       expect(routeResponse.body).to.be.equal('request_number_regex');
     });
 
-    it('should not return response if request don\'t matches regex', () => {
+    it("should not return response if request don't matches regex", () => {
       const request: Request = {
         header: function (headerName: string) {
           const headers = {
