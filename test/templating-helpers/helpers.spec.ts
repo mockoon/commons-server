@@ -404,6 +404,16 @@ describe('Template parser', () => {
 
       expect(parseResult).to.be.equal('dolphin,dolphin,dolphin,');
     });
+
+    it('should be compatible with SafeString (queryParam)', () => {
+      const parseResult = TemplateParser(
+        "{{#each (split (queryParam 'param1') ',')}}item{{this}},{{/each}}",
+        { query: { param1: '123,456,789' } } as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('item123,item456,item789,');
+    });
   });
 
   describe('Helper: indexOf', () => {

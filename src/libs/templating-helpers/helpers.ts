@@ -302,7 +302,9 @@ export const Helpers = {
       return '';
     }
 
-    const data = parameters[0];
+    // make it compatible with SafeString (from queryParam, etc)
+    const data = fromSafeString(parameters[0]);
+
     let separator;
     if (parameters.length >= 2) {
       separator = parameters[1];
