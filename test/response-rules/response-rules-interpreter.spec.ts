@@ -1038,8 +1038,8 @@ describe('Response rules interpreter', () => {
           return headers[headerName];
         },
         cookies: {
-          'login': 'tommy',
-          'othercookie' : 'testme'
+          login: 'tommy',
+          othercookie: 'testme'
         },
         body: ''
       } as Request;
