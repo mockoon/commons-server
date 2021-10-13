@@ -1026,6 +1026,48 @@ describe('Response rules interpreter', () => {
     });
   });
 
+  describe('Cookie rules', () => {
+    it('should return response if cookie value matches (regex)', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        cookies: {
+          'login': 'tommy',
+          'othercookie' : 'testme'
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'cookie',
+                modifier: 'login',
+                value: 'tom.+',
+                operator: 'regex'
+              }
+            ],
+            body: 'cookie1'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('cookie1');
+    });
+  });
+
   describe('Body rules', () => {
     const xmlBody =
       '<?xml version="1.0" encoding="utf-8"?><user userId="1"><name>John</name></user>';

@@ -15,7 +15,7 @@ import { ParsedQs } from 'qs';
 export class ResponseRulesInterpreter {
   private targets: {
     [key in
-      | Exclude<ResponseRuleTargets, 'header' | 'request_number'>
+      | Exclude<ResponseRuleTargets, 'header' | 'request_number' | 'cookie'>
       | 'bodyRaw']: any;
   };
 
@@ -85,7 +85,9 @@ export class ResponseRulesInterpreter {
       value = requestNumber;
     }
 
-    if (rule.target === 'header') {
+    if(rule.target === 'cookie') {
+      value = this.request.cookies && this.request.cookies[rule.modifier] || '';
+    } else if (rule.target === 'header') {
       value = this.request.header(rule.modifier);
     } else {
       if (rule.modifier) {
@@ -156,7 +158,7 @@ export class ResponseRulesInterpreter {
       body,
       query: this.request.query,
       params: this.request.params,
-      bodyRaw: this.request.body.toString()
+      bodyRaw: this.request.body.toString(),
     };
   }
 }
