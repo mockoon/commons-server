@@ -104,7 +104,7 @@ describe('Template parser', () => {
         {} as any,
         {} as any
       );
-      expect(parseResult).to.be.equal('1234');
+      expect(parseResult).to.be.equal('01234');
     });
 
     it('should set a variable in root scope and child scope: repeat', () => {
@@ -113,7 +113,7 @@ describe('Template parser', () => {
         {} as any,
         {} as any
       );
-      expect(parseResult).to.be.equal('testtest1test2test3test4test');
+      expect(parseResult).to.be.equal('test0test1test2test3test4test');
     });
 
     it('should set a variable to empty value if none provided', () => {
@@ -416,6 +416,38 @@ describe('Template parser', () => {
     });
   });
 
+  describe('Helper: join', () => {
+    it('should join an Array with spaces', () => {
+      const parseResult = TemplateParser(
+        '{{join (array "Mockoon" "is" "nice") " "}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('Mockoon is nice');
+    });
+
+    it('should ignore non Array values and return same value', () => {
+      const parseResult = TemplateParser(
+        '{{join "I too, love dolphins" " "}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('I too, love dolphins');
+    });
+
+    it('should use comma separator if no separator was provided', () => {
+      const parseResult = TemplateParser(
+        '{{join (array "Water" "Tea" "Coffee")}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('Water, Tea, Coffee');
+    });
+  });
+
   describe('Helper: indexOf', () => {
     it('should return the index of a matching substring', () => {
       const parseResult = TemplateParser(
@@ -574,6 +606,36 @@ describe('Template parser', () => {
       const countSeparators = (parseResult.match(/,/g) || []).length;
       expect(countSeparators).is.least(0);
       expect(countSeparators).is.most(2);
+    });
+  });
+
+  describe('Helper: len', () => {
+    it('should return the length of an array', () => {
+      const parseResult = TemplateParser(
+        '{{len (array 1 2 3)}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('3');
+    });
+
+    it('should return the length of a string', () => {
+      const parseResult = TemplateParser(
+        '{{len "Cowboy"}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('6');
+    });
+
+    it('should return 0 if value is not an array', () => {
+      const parseResult = TemplateParser('{{len true}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return 0 if no value was provided', () => {
+      const parseResult = TemplateParser('{{len}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('0');
     });
   });
 
@@ -922,6 +984,216 @@ describe('Template parser', () => {
     it('should return an empty string when given no arguments', () => {
       const parseResult = TemplateParser('{{floor }}', {} as any, {} as any);
       expect(parseResult).to.be.equal('');
+    });
+  });
+
+  describe('Helper: round', () => {
+    it('should round a number up when min .5', () => {
+      const parseResult = TemplateParser('{{round 0.5}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('1');
+    });
+
+    it('should round a number down when smaller than .5', () => {
+      const parseResult = TemplateParser(
+        '{{round 0.499}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should take a string', () => {
+      const parseResult = TemplateParser(
+        '{{round "0.499"}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return empty string if no parameters', () => {
+      const parseResult = TemplateParser('{{round}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('');
+    });
+  });
+
+  describe('Helper: toFixed', function () {
+    it('should fix the number to correct format', () => {
+      const parseResult = TemplateParser(
+        '{{toFixed 1.11111 2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('1.11');
+    });
+
+    it('should delete all decimal places if no fix value is given', () => {
+      const parseResult = TemplateParser(
+        '{{toFixed 2.11111}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('2');
+    });
+
+    it('should return 0 if no values are given', () => {
+      const parseResult = TemplateParser('{{toFixed}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('0');
+    });
+
+    it('should return 0 if wrong values are given as number', () => {
+      const parseResult = TemplateParser(
+        '{{toFixed "hi"}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0');
+    });
+  });
+
+  describe('Helper: gt', function () {
+    it('should return true if first number is bigger than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gt 1.11111 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if first number is smaller than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gt 1.11111 1.2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return false if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{gt 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+  });
+
+  describe('Helper: gt', function () {
+    it('should return true if first number is bigger than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gt 1.11111 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if first number is smaller than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gt 1.11111 1.2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return false if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{gt 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+  });
+
+  describe('Helper: gte', function () {
+    it('should return true if first number is bigger than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gte 1.11111 1}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if first number is smaller than second number', () => {
+      const parseResult = TemplateParser(
+        '{{gte 1.11111 1.2}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return true if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{gte 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('true');
+    });
+  });
+
+  describe('Helper: lt', function () {
+    it('should return true if second number is bigger than first number', () => {
+      const parseResult = TemplateParser('{{lt 1 2}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if second number is bigger than second number', () => {
+      const parseResult = TemplateParser('{{lt 2 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return false if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{lt 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+  });
+
+  describe('Helper: lte', function () {
+    it('should return true if second number is bigger than first number', () => {
+      const parseResult = TemplateParser('{{lte 1 2}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('true');
+    });
+
+    it('should return false if second number is bigger than second number', () => {
+      const parseResult = TemplateParser('{{lte 2 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return true if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{lte 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('true');
+    });
+  });
+
+  describe('Helper: eq', function () {
+    it('should return false if second number is bigger than first number', () => {
+      const parseResult = TemplateParser('{{eq 1 2}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return false if second number is bigger than second number', () => {
+      const parseResult = TemplateParser('{{eq 2 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('false');
+    });
+
+    it('should return true if first number is equal to the second number', () => {
+      const parseResult = TemplateParser('{{eq 1 1}}', {} as any, {} as any);
+      expect(parseResult).to.be.equal('true');
+    });
+  });
+
+  describe('Helper: stringify', () => {
+    it('should output objects as string', () => {
+      const parseResult = TemplateParser(
+        '{{{stringify (bodyRaw "prop2")}}}',
+        {
+          parsedBody: {
+            prop1: '123',
+            prop2: {
+              data: 'super'
+            }
+          }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal(`{
+  "data": "super"
+}`);
     });
   });
 });
