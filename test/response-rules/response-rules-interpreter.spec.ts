@@ -1026,6 +1026,168 @@ describe('Response rules interpreter', () => {
     });
   });
 
+  describe('Cookie rules', () => {
+    it('should return response if cookie value matches (regex)', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        cookies: {
+          login: 'tommy',
+          othercookie: 'testme'
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'cookie',
+                modifier: 'login',
+                value: 'tom.+',
+                operator: 'regex'
+              }
+            ],
+            body: 'cookie1'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('cookie1');
+    });
+
+    it('should return response if cookie value matches (no regex)', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        cookies: {
+          login: 'tommy',
+          othercookie: 'testme'
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'cookie',
+                modifier: 'login',
+                value: 'tommy',
+                operator: 'equals'
+              }
+            ],
+            body: 'cookie2'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('cookie2');
+    });
+
+    it('should return default response if cookie value does not match', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        cookies: {
+          login: 'cola',
+          othercookie: 'testme'
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'cookie',
+                modifier: 'login',
+                value: 'fanta',
+                operator: 'equals'
+              }
+            ],
+            body: 'cookie2'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('unauthorized');
+    });
+
+    it('should return default response if cookie modifier is not present', () => {
+      const request: Request = {
+        header: function (headerName: string) {
+          const headers = {
+            'Content-Type': 'application/json',
+            'Accept-Charset': 'UTF-8'
+          };
+
+          return headers[headerName];
+        },
+        cookies: {
+          login: 'cola',
+          othercookie: 'testme'
+        },
+        body: ''
+      } as Request;
+
+      const routeResponse = new ResponseRulesInterpreter(
+        [
+          routeResponse403,
+          {
+            ...routeResponseTemplate,
+            rules: [
+              {
+                target: 'cookie',
+                modifier: '',
+                value: 'cola',
+                operator: 'equals'
+              }
+            ],
+            body: 'cookie3'
+          }
+        ],
+        request,
+        false,
+        false
+      ).chooseResponse(1);
+      expect(routeResponse.body).to.be.equal('unauthorized');
+    });
+  });
+
   describe('Body rules', () => {
     const xmlBody =
       '<?xml version="1.0" encoding="utf-8"?><user userId="1"><name>John</name></user>';
