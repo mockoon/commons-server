@@ -86,8 +86,10 @@ export class ResponseRulesInterpreter {
     }
 
     if (rule.target === 'cookie') {
-      value =
-        (this.request.cookies && this.request.cookies[rule.modifier]) || '';
+      if (!rule.modifier) {
+        return false;
+      }
+      value = this.request.cookies && this.request.cookies[rule.modifier];
     } else if (rule.target === 'header') {
       value = this.request.header(rule.modifier);
     } else {
