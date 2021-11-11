@@ -448,6 +448,48 @@ describe('Template parser', () => {
     });
   });
 
+  describe('Helper: slice', () => {
+    it('should return an empty string if parameter is not an array', () => {
+      const parseResult = TemplateParser(
+        '{{slice "hello"}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('');
+    });
+
+    it('should return the stringified array (same content)', () => {
+      const parseResult = TemplateParser(
+        '{{slice (array "Mockoon" "is" "very" "nice")}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('Mockoon,is,very,nice');
+    });
+
+    it('should return the stringified first two elements', () => {
+      const parseResult = TemplateParser(
+        '{{slice (array "Mockoon" "is" "very" "nice") 0 2}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('Mockoon,is');
+    });
+
+    it('should return the stringified last two elements', () => {
+      const parseResult = TemplateParser(
+        '{{slice (array "Mockoon" "is" "very" "nice") 2}}',
+        {} as any,
+        {} as any
+      );
+
+      expect(parseResult).to.be.equal('very,nice');
+    });
+  });
+
   describe('Helper: indexOf', () => {
     it('should return the index of a matching substring', () => {
       const parseResult = TemplateParser(

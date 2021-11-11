@@ -335,7 +335,7 @@ export const Helpers = {
     sliceTo?: number | unknown
   ) {
     if (!(arr instanceof Array)) {
-      return 'lol';
+      return '';
     }
 
     return typeof sliceTo === 'number'
