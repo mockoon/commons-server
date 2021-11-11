@@ -320,22 +320,92 @@ export const Helpers = {
 
     return data.split(separator);
   },
+  // Joins Array Values as String with separator
+  join: function (arr: string[], sep: string) {
+    if (!arr || !(arr instanceof Array)) {
+      return arr;
+    }
+
+    return arr.join(typeof sep !== 'string' ? ', ' : sep);
+  },
+
+  slice: function (
+    arr: Array<unknown>,
+    sliceFrom: number,
+    sliceTo?: number | unknown
+  ) {
+    if (!(arr instanceof Array)) {
+      return 'lol';
+    }
+
+    return typeof sliceTo === 'number'
+      ? arr.slice(sliceFrom, sliceTo)
+      : arr.slice(sliceFrom);
+  },
+
+  // Returns array length or string length
+  len: function (arr: Array<unknown> | string) {
+    return typeof arr !== 'string' && !Array.isArray(arr) ? 0 : arr.length;
+  },
+
+  eq: function (num1: number | string, num2: number | string) {
+    const number1 = Number(num1);
+    const number2 = Number(num2);
+    if (Number.isNaN(number1) || Number.isNaN(number2)) {
+      return false;
+    }
+
+    return number1 === number2;
+  },
+
+  gt: function (num1: number | string, num2: number | string) {
+    const number1 = Number(num1);
+    const number2 = Number(num2);
+    if (Number.isNaN(number1) || Number.isNaN(number2)) {
+      return false;
+    }
+
+    return number1 > number2;
+  },
+
+  gte: function (num1: number | string, num2: number | string) {
+    const number1 = Number(num1);
+    const number2 = Number(num2);
+    if (Number.isNaN(number1) || Number.isNaN(number2)) {
+      return false;
+    }
+
+    return number1 >= number2;
+  },
+
+  lt: function (num1: number | string, num2: number | string) {
+    const number1 = Number(num1);
+    const number2 = Number(num2);
+    if (Number.isNaN(number1) || Number.isNaN(number2)) {
+      return false;
+    }
+
+    return number1 < number2;
+  },
+
+  lte: function (num1: number | string, num2: number | string) {
+    const number1 = Number(num1);
+    const number2 = Number(num2);
+    if (Number.isNaN(number1) || Number.isNaN(number2)) {
+      return false;
+    }
+
+    return number1 <= number2;
+  },
 
   // set a variable to be used in the template
-  setVar: function (
-    name: string,
-    value: string | number | SafeString | HelperOptions,
-    options: HelperOptions
-  ) {
+  setVar: function (name: string, value: unknown, options: HelperOptions) {
     if (typeof name === 'object') {
       return;
     }
 
-    // return if no value provided
-    if (
-      (typeof value === 'object' && !(value instanceof SafeString)) ||
-      !value
-    ) {
+    // return if not all parameters have been provided
+    if (arguments.length < 3) {
       return;
     }
 
@@ -603,5 +673,35 @@ export const Helpers = {
     }
 
     return Math.floor(Number(parameters[0]));
+  },
+  round: function (...args: any[]) {
+    const parameters = args.slice(0, -1);
+    // Check if there are parameters
+    if (parameters.length === 0) {
+      return '';
+    }
+
+    return Math.round(Number(parameters[0]));
+  },
+  toFixed: function (number: number, digits: number) {
+    if (Number.isNaN(Number(number))) {
+      number = 0;
+    }
+    if (Number.isNaN(Number(digits))) {
+      digits = 0;
+    }
+
+    return Number(number).toFixed(digits);
+  },
+  // Returns Objects as formatted JSON String
+  stringify: function (data: unknown, options: HelperOptions) {
+    if (!options) {
+      return;
+    }
+    if (data && typeof data === 'object') {
+      return JSON.stringify(data, null, 2);
+    } else {
+      return data;
+    }
   }
 };
