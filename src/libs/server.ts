@@ -423,25 +423,18 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     response: Response
   ) {
     try {
-      const filePath = TemplateParser(
+      let filePath = TemplateParser(
         routeResponse.filePath.replace(/\\/g, '/'),
         request,
         this.environment
       );
 
-      let processedFilePath: string;
-      if (!this.options.environmentDirectory) {
-        processedFilePath = filePath;
-      } else if (isAbsolute(filePath)) {
-        processedFilePath = filePath;
-      } else {
-        processedFilePath = resolve(
-          this.options.environmentDirectory,
-          filePath
-        );
+      // if possible, resolve the file paths relatively from the current environment's directory
+      if (this.options.environmentDirectory && !isAbsolute(filePath)) {
+        filePath = resolve(this.options.environmentDirectory, filePath);
       }
 
-      readFile(processedFilePath, (readError, data) => {
+      readFile(filePath, (readError, data) => {
         try {
           if (readError && !routeResponse.fallbackTo404) {
             throw readError;
