@@ -542,6 +542,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       server.use(
         '*',
         createProxyMiddleware({
+          cookieDomainRewrite: {"*": ""},
           target: this.environment.proxyHost,
           secure: false,
           changeOrigin: true,
@@ -630,7 +631,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   private setHeaders(headers: Header[], target: any, request: Request) {
     headers.forEach((header: Header) => {
       const isSetCookie = header.key.toLowerCase() === 'set-cookie';
-      const parsedHeaderValue = this.parseHeader(header, request);
+      let parsedHeaderValue = this.parseHeader(header, request);
 
       if (parsedHeaderValue === null) {
         return;
@@ -649,6 +650,8 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       } else {
         // for http.IncomingMessage
         if (isSetCookie) {
+          // Remove the secure flag
+          parsedHeaderValue = parsedHeaderValue.replace(/; secure/gi, '');
           target.headers[header.key] = this.appendHeaderValue(
             target.headers[header.key],
             parsedHeaderValue
