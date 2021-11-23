@@ -1,7 +1,7 @@
 {
   "uuid": "c6199444-5116-490a-99a2-074876253a4a",
-  "lastMigration": 16,
-  "name": "Bad Port Test",
+  "lastMigration": 19,
+  "name": "Server error tests",
   "port": 3000,
   "hostname": "0.0.0.0",
   "endpointPrefix": "",
@@ -23,7 +23,9 @@
           "latency": 0,
           "filePath": "",
           "sendFileAsBody": false,
-          "disableTemplating": false
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "body": "{}"
         }
       ],
       "enabled": true,
@@ -36,7 +38,15 @@
   "proxyHost": "",
   "proxyReqHeaders": [],
   "proxyResHeaders": [],
-  "https": false,
   "cors": false,
-  "headers": []
+  "headers": [],
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  }
 }
