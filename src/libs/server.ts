@@ -11,8 +11,7 @@ import {
   Route,
   RouteResponse,
   ServerErrorCodes,
-  ServerEvents,
-  TestHeaderValidity
+  ServerEvents
 } from '@mockoon/commons';
 import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
@@ -634,34 +633,36 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
    */
   private setHeaders(headers: Header[], target: any, request: Request) {
     headers.forEach((header: Header) => {
-      const isSetCookie = header.key.toLowerCase() === 'set-cookie';
-      const parsedHeaderValue = this.parseHeader(header, request);
+      try {
+        const isSetCookie = header.key.toLowerCase() === 'set-cookie';
+        const parsedHeaderValue = this.parseHeader(header, request);
 
-      if (parsedHeaderValue === null) {
-        return;
-      }
+        if (parsedHeaderValue === null) {
+          return;
+        }
 
-      if (target.set) {
-        // for express.Response
-        if (isSetCookie) {
-          target.append(header.key, parsedHeaderValue);
+        if (target.set) {
+          // for express.Response
+          if (isSetCookie) {
+            target.append(header.key, parsedHeaderValue);
+          } else {
+            target.set(header.key, parsedHeaderValue);
+          }
+        } else if (target.setHeader) {
+          // for proxy http.OutgoingMessage | ClientRequest
+          target.setHeader(header.key, parsedHeaderValue);
         } else {
-          target.set(header.key, parsedHeaderValue);
+          // for http.IncomingMessage
+          if (isSetCookie) {
+            target.headers[header.key] = this.appendHeaderValue(
+              target.headers[header.key],
+              parsedHeaderValue
+            );
+          } else {
+            target.headers[header.key] = parsedHeaderValue;
+          }
         }
-      } else if (target.setHeader) {
-        // for proxy http.OutgoingMessage | ClientRequest
-        target.setHeader(header.key, parsedHeaderValue);
-      } else {
-        // for http.IncomingMessage
-        if (isSetCookie) {
-          target.headers[header.key] = this.appendHeaderValue(
-            target.headers[header.key],
-            parsedHeaderValue
-          );
-        } else {
-          target.headers[header.key] = parsedHeaderValue;
-        }
-      }
+      } catch (error) {}
     });
   }
 
@@ -697,7 +698,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   private parseHeader(header: Header, request: Request): string | null {
     let parsedHeaderValue: string | null = null;
 
-    if (header.key && header.value && !TestHeaderValidity(header.key)) {
+    if (header.key && header.value) {
       try {
         parsedHeaderValue = TemplateParser(
           header.value,
