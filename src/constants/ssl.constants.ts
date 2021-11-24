@@ -61,7 +61,7 @@ DSy8hsBy1uo=
 `
 };
 
-export const DefaultSSLConfig: SecureContextOptions = {
+export const DefaultTLSOptions: SecureContextOptions = {
   key: pemFiles.key,
   cert: pemFiles.cert,
   ca: ''

@@ -180,7 +180,7 @@ export const RequestHelpers = function (
       const prefix = environment.endpointPrefix
         ? `/${environment.endpointPrefix}`
         : '';
-      const protocol = environment.https ? 'https' : 'http';
+      const protocol = environment.tlsOptions.enabled ? 'https' : 'http';
 
       return `${protocol}://${request.hostname}:${environment.port}${prefix}`;
     },

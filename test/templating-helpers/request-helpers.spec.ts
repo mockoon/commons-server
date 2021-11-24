@@ -390,7 +390,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: false,
+          tlsOptions: {
+            enabled: false,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3000,
           endpointPrefix: 'api'
         } as any
@@ -404,7 +412,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3000,
           endpointPrefix: 'api'
         } as any
@@ -419,7 +435,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3001,
           endpointPrefix: 'api'
         } as any
@@ -435,7 +459,15 @@ describe('Template parser', () => {
         } as any,
         {
           port: 3005,
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           endpointPrefix: 'api'
         } as any
       );
@@ -449,7 +481,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3001,
           endpointPrefix: 'v1'
         } as any
@@ -464,7 +504,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3001
         } as any
       );
@@ -478,7 +526,15 @@ describe('Template parser', () => {
           hostname: 'localhost'
         } as any,
         {
-          https: true,
+          tlsOptions: {
+            enabled: true,
+            type: 'CERT',
+            pfxPath: '',
+            certPath: '',
+            keyPath: '',
+            caPath: '',
+            passphrase: ''
+          },
           port: 3001,
           endpointPrefix: ''
         } as any

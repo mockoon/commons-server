@@ -2,6 +2,7 @@ import { Header, Transaction } from '@mockoon/commons';
 import { Request, Response } from 'express';
 import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
+import { isAbsolute, resolve } from 'path';
 import { URL } from 'url';
 import { brotliDecompressSync, inflateSync, unzipSync } from 'zlib';
 
@@ -160,3 +161,17 @@ export const ToBase64 = (text: string): string => {
  */
 export const fromSafeString = (text: string | SafeString) =>
   text instanceof SafeString ? text.toString() : text;
+
+/**
+ * Resolve a file path relatively to the current environment folder if provided
+ */
+export const resolvePathFromEnvironment = (
+  filePath: string,
+  environmentDirectory?: string
+) => {
+  if (environmentDirectory && !isAbsolute(filePath)) {
+    return resolve(environmentDirectory, filePath);
+  }
+
+  return filePath;
+};

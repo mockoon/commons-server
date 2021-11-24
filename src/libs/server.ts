@@ -11,13 +11,12 @@ import {
   Route,
   RouteResponse,
   ServerErrorCodes,
-  ServerEvents,
-  TestHeaderValidity
+  ServerEvents
 } from '@mockoon/commons';
 import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
 import express, { Application, NextFunction, Request, Response } from 'express';
-import { readFile } from 'fs';
+import { readFile, readFileSync } from 'fs';
 import { createServer as httpCreateServer, Server as httpServer } from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
@@ -26,15 +25,16 @@ import {
 } from 'https';
 import killable from 'killable';
 import { lookup as mimeTypeLookup } from 'mime-types';
-import { basename, isAbsolute, resolve } from 'path';
+import { basename } from 'path';
 import { parse as qsParse } from 'qs';
+import { SecureContextOptions } from 'tls';
 import TypedEmitter from 'typed-emitter';
 import { xml2js } from 'xml-js';
-import { DefaultSSLConfig } from '../constants/ssl.constants';
+import { DefaultTLSOptions } from '../constants/ssl.constants';
 import { Texts } from '../i18n/en';
 import { ResponseRulesInterpreter } from './response-rules-interpreter';
 import { TemplateParser } from './template-parser';
-import { CreateTransaction } from './utils';
+import { CreateTransaction, resolvePathFromEnvironment } from './utils';
 
 /**
  * Create a server instance from an Environment object.
@@ -43,6 +43,7 @@ import { CreateTransaction } from './utils';
  */
 export class MockoonServer extends (EventEmitter as new () => TypedEmitter<ServerEvents>) {
   private serverInstance: httpServer | httpsServer;
+  private tlsOptions: SecureContextOptions = {};
 
   constructor(
     private environment: Environment,
@@ -60,8 +61,18 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     server.disable('etag');
 
     // create https or http server instance
-    if (this.environment.https) {
-      this.serverInstance = httpsCreateServer(DefaultSSLConfig, server);
+    if (this.environment.tlsOptions.enabled) {
+      try {
+        this.tlsOptions = this.buildTLSOptions(this.environment);
+
+        this.serverInstance = httpsCreateServer(this.tlsOptions, server);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          this.emit('error', ServerErrorCodes.CERT_FILE_NOT_FOUND, error);
+        } else {
+          this.emit('error', ServerErrorCodes.UNKNOWN_SERVER_ERROR, error);
+        }
+      }
     } else {
       this.serverInstance = httpCreateServer(server);
     }
@@ -423,25 +434,18 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     response: Response
   ) {
     try {
-      const filePath = TemplateParser(
+      let filePath = TemplateParser(
         routeResponse.filePath.replace(/\\/g, '/'),
         request,
         this.environment
       );
 
-      let processedFilePath: string;
-      if (!this.options.environmentDirectory) {
-        processedFilePath = filePath;
-      } else if (isAbsolute(filePath)) {
-        processedFilePath = filePath;
-      } else {
-        processedFilePath = resolve(
-          this.options.environmentDirectory,
-          filePath
-        );
-      }
+      filePath = resolvePathFromEnvironment(
+        filePath,
+        this.options.environmentDirectory
+      );
 
-      readFile(processedFilePath, (readError, data) => {
+      readFile(filePath, (readError, data) => {
         try {
           if (readError && !routeResponse.fallbackTo404) {
             throw readError;
@@ -547,7 +551,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           secure: false,
           changeOrigin: true,
           logProvider: this.options.logProvider,
-          ssl: { ...DefaultSSLConfig, agent: false },
+          ssl: { ...this.tlsOptions, agent: false },
           onProxyReq: (proxyReq, request, response) => {
             this.refreshEnvironment();
 
@@ -630,36 +634,38 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
    */
   private setHeaders(headers: Header[], target: any, request: Request) {
     headers.forEach((header: Header) => {
-      const isSetCookie = header.key.toLowerCase() === 'set-cookie';
-      let parsedHeaderValue = this.parseHeader(header, request);
+      try {
+        const isSetCookie = header.key.toLowerCase() === 'set-cookie';
+        let parsedHeaderValue = this.parseHeader(header, request);
 
-      if (parsedHeaderValue === null) {
-        return;
-      }
+        if (parsedHeaderValue === null) {
+          return;
+        }
 
-      if (target.set) {
-        // for express.Response
-        if (isSetCookie) {
-          target.append(header.key, parsedHeaderValue);
+        if (target.set) {
+          // for express.Response
+          if (isSetCookie) {
+            target.append(header.key, parsedHeaderValue);
+          } else {
+            target.set(header.key, parsedHeaderValue);
+          }
+        } else if (target.setHeader) {
+          // for proxy http.OutgoingMessage | ClientRequest
+          target.setHeader(header.key, parsedHeaderValue);
         } else {
-          target.set(header.key, parsedHeaderValue);
+          // for http.IncomingMessage
+          if (isSetCookie) {
+            // Remove the secure flag
+            parsedHeaderValue = parsedHeaderValue.replace(/; secure/gi, '');
+            target.headers[header.key] = this.appendHeaderValue(
+              target.headers[header.key],
+              parsedHeaderValue
+            );
+          } else {
+            target.headers[header.key] = parsedHeaderValue;
+          }
         }
-      } else if (target.setHeader) {
-        // for proxy http.OutgoingMessage | ClientRequest
-        target.setHeader(header.key, parsedHeaderValue);
-      } else {
-        // for http.IncomingMessage
-        if (isSetCookie) {
-          // Remove the secure flag
-          parsedHeaderValue = parsedHeaderValue.replace(/; secure/gi, '');
-          target.headers[header.key] = this.appendHeaderValue(
-            target.headers[header.key],
-            parsedHeaderValue
-          );
-        } else {
-          target.headers[header.key] = parsedHeaderValue;
-        }
-      }
+      } catch (error) {}
     });
   }
 
@@ -695,7 +701,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   private parseHeader(header: Header, request: Request): string | null {
     let parsedHeaderValue: string | null = null;
 
-    if (header.key && header.value && !TestHeaderValidity(header.key)) {
+    if (header.key && header.value) {
       try {
         parsedHeaderValue = TemplateParser(
           header.value,
@@ -761,5 +767,67 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     }
 
     return currentRoute;
+  }
+
+  /**
+   * Build the secure context options
+   * - if custom cert are provided load them
+   * - if not, use default TLS cert (self-signed)
+   *
+   * @returns
+   */
+  private buildTLSOptions(environment: Environment): SecureContextOptions {
+    let tlsOptions: SecureContextOptions = {};
+
+    if (
+      environment.tlsOptions?.pfxPath ||
+      (environment.tlsOptions?.certPath && environment.tlsOptions?.keyPath)
+    ) {
+      if (
+        environment.tlsOptions?.type === 'PFX' &&
+        environment.tlsOptions?.pfxPath
+      ) {
+        tlsOptions.pfx = readFileSync(
+          resolvePathFromEnvironment(
+            environment.tlsOptions?.pfxPath,
+            this.options.environmentDirectory
+          )
+        );
+      } else if (
+        environment.tlsOptions?.type === 'CERT' &&
+        environment.tlsOptions?.certPath &&
+        environment.tlsOptions?.keyPath
+      ) {
+        tlsOptions.cert = readFileSync(
+          resolvePathFromEnvironment(
+            environment.tlsOptions?.certPath,
+            this.options.environmentDirectory
+          )
+        );
+        tlsOptions.key = readFileSync(
+          resolvePathFromEnvironment(
+            environment.tlsOptions?.keyPath,
+            this.options.environmentDirectory
+          )
+        );
+      }
+
+      if (environment.tlsOptions?.caPath) {
+        tlsOptions.ca = readFileSync(
+          resolvePathFromEnvironment(
+            environment.tlsOptions?.caPath,
+            this.options.environmentDirectory
+          )
+        );
+      }
+
+      if (environment.tlsOptions?.passphrase) {
+        tlsOptions.passphrase = environment.tlsOptions?.passphrase;
+      }
+    } else {
+      tlsOptions = { ...DefaultTLSOptions };
+    }
+
+    return tlsOptions;
   }
 }
