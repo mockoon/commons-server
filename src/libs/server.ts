@@ -546,7 +546,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
       server.use(
         '*',
         createProxyMiddleware({
-          cookieDomainRewrite: {"*": ""},
+          cookieDomainRewrite: {'*': ''},
           target: this.environment.proxyHost,
           secure: false,
           changeOrigin: true,
