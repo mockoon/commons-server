@@ -91,17 +91,22 @@ export const Helpers = {
   // switch cases
   switch: function (value: any, options: HelperOptions) {
     options.data.found = false;
+    options.data.switchValue = fromSafeString(value);
 
-    options.data.switchValue =
-      value instanceof SafeString ? value.toString() : value;
-    const htmlContent = options.fn(options);
-
-    return htmlContent;
+    return options.fn(options);
   },
   // case helper for switch
-  case: function (value: any, options: HelperOptions) {
-    // check switch value to simulate break
-    if (value.toString() === options.data.switchValue && !options.data.found) {
+  case: function (...args: any[]) {
+    let value = '';
+    let options;
+
+    if (args.length >= 2) {
+      value = args[0];
+      options = args[args.length - 1];
+    }
+
+    if (value === options.data.switchValue && !options.data.found) {
+      // check switch value to simulate break
       options.data.found = true;
 
       return options.fn(options);

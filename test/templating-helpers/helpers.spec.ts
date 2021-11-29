@@ -3,6 +3,39 @@ import { format as dateFormat } from 'date-fns';
 import { TemplateParser } from '../../src/libs/template-parser';
 
 describe('Template parser', () => {
+  describe('Helper: switch', () => {
+    it('should return different values depending on the string value', () => {
+      const parseResult = TemplateParser(
+        '{{#switch (body "prop1")}}{{#case "value1"}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
+        {
+          parsedBody: { prop1: 'value1' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('value1');
+    });
+
+    it('should return default values depending on the string value', () => {
+      const parseResult = TemplateParser(
+        '{{#switch (body "prop1")}}{{#case "value1"}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
+        {
+          parsedBody: { prop1: 'defaultvalue' }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('defaultvalue');
+    });
+
+    it('should return different values depending on the index', () => {
+      const parseResult = TemplateParser(
+        '{{#repeat 2 comma=false}}{{@index}}{{#switch @index}}{{#case 0}}John{{/case}}{{#default}}Peter{{/default}}{{/switch}}{{/repeat}}',
+        {} as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('0John1Peter');
+    });
+  });
+
   describe('Helper: concat', () => {
     it('should concat two strings', () => {
       const parseResult = TemplateParser(
