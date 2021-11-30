@@ -34,6 +34,28 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('0John1Peter');
     });
+
+    it('should return different values depending on the boolean value', () => {
+      const parseResult = TemplateParser(
+        '{{#switch (bodyRaw "prop1")}}{{#case true}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
+        {
+          parsedBody: { prop1: true }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('value1');
+    });
+
+    it('should return different values depending on the boolean value', () => {
+      const parseResult = TemplateParser(
+        '{{#switch (bodyRaw "prop1")}}{{#case true}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
+        {
+          parsedBody: { prop1: false }
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('defaultvalue');
+    });
   });
 
   describe('Helper: concat', () => {
