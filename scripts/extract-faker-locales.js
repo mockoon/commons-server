@@ -1,4 +1,4 @@
-const fakerLocales = require('../node_modules/faker/lib/locales.js');
+const fakerLocales = require('../node_modules/@faker-js/faker/lib/locales.js');
 
 /**
  * Extract locales list from Faker.js to be used in the commons librairy and main app
