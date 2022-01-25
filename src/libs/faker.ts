@@ -1,5 +1,5 @@
+import faker from '@faker-js/faker';
 import { FakerAvailableLocales } from '@mockoon/commons';
-import faker from 'faker';
 
 /**
  * Set the Faker locale
