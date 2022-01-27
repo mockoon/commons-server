@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Request } from 'express';
 import QueryString from 'qs';
 import { xml2js } from 'xml-js';
-import { ResponseRulesInterpreter } from '../../src/libs/response-rules-interpreter';
+import { ResponseRulesInterpreter } from '../../../src/libs/response-rules-interpreter';
 
 const routeResponse403: RouteResponse = {
   uuid: '',

@@ -1,6 +1,6 @@
 import faker from '@faker-js/faker';
 import { expect } from 'chai';
-import { TemplateParser } from '../../src/libs/template-parser';
+import { TemplateParser } from '../../../src/libs/template-parser';
 
 faker.seed(1);
 

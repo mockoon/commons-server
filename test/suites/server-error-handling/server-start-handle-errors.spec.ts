@@ -1,11 +1,11 @@
 import { Environment, ServerErrorCodes } from '@mockoon/commons';
 import { expect } from 'chai';
 import { promises as fs } from 'fs';
-import { MockoonServer } from '../../src';
+import { MockoonServer } from '../../../src';
 
 async function getEnvironment(): Promise<Environment> {
   const environmentJson = await fs.readFile(
-    './test/server-error-handling/environment.json',
+    './test/data/environments/test-env.json',
     'utf-8'
   );
 

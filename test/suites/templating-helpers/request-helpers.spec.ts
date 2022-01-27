@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { TemplateParser } from '../../src/libs/template-parser';
+import { TemplateParser } from '../../../src/libs/template-parser';
 
 const requestMock = {
   get: function (headerName: string) {

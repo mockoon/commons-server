@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { format as dateFormat } from 'date-fns';
-import { TemplateParser } from '../../src/libs/template-parser';
+import { TemplateParser } from '../../../src/libs/template-parser';
 
 describe('Template parser', () => {
   describe('Helper: switch', () => {
