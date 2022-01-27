@@ -16,7 +16,7 @@ import {
 import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
 import express, { Application, NextFunction, Request, Response } from 'express';
-import { access, constants, readFile, readFileSync } from 'fs';
+import { createReadStream, readFile, readFileSync, statSync } from 'fs';
 import { createServer as httpCreateServer, Server as httpServer } from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
@@ -435,21 +435,18 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
   ) {
     const fileServingError = (error) => {
       this.emit('error', ServerErrorCodes.ROUTE_FILE_SERVING_ERROR, error);
-
       this.sendError(
         response,
         `${Texts.EN.MESSAGES.ROUTE_FILE_SERVING_ERROR}${error.message}`
       );
     };
 
-    const fileErrorThrowOrFallback = (error) => {
-      if (error && !routeResponse.fallbackTo404) {
-        throw error;
-      } else if (error && routeResponse.fallbackTo404) {
+    const errorThrowOrFallback = (error) => {
+      if (routeResponse.fallbackTo404) {
         response.status(404);
         this.serveBody(routeResponse, request, response);
-
-        return;
+      } else {
+        fileServingError(error);
       }
     };
 
@@ -467,60 +464,63 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
       const fileMimeType = mimeTypeLookup(filePath) || '';
 
-      access(filePath, constants.R_OK, (accessError) => {
-        try {
-          if (accessError) {
-            fileErrorThrowOrFallback(accessError);
+      // set content-type to route response's one or the detected mime type if none
+      if (!routeContentType) {
+        response.set('Content-Type', fileMimeType);
+      }
+
+      if (!routeResponse.sendFileAsBody) {
+        response.set(
+          'Content-Disposition',
+          `attachment; filename="${basename(filePath)}"`
+        );
+      }
+
+      // parse templating for a limited list of mime types
+      if (
+        MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
+        !routeResponse.disableTemplating
+      ) {
+        readFile(filePath, (readError, data) => {
+          if (readError) {
+            errorThrowOrFallback(readError);
 
             return;
           }
 
-          // set content-type to route response's one or the detected mime type if none
-          if (!routeContentType) {
-            response.set('Content-Type', fileMimeType);
-          }
-
-          if (!routeResponse.sendFileAsBody) {
-            response.set(
-              'Content-Disposition',
-              `attachment; filename="${basename(filePath)}"`
+          try {
+            const fileContent = TemplateParser(
+              data.toString(),
+              request,
+              this.environment
             );
+
+            response.body = fileContent;
+            response.send(fileContent);
+          } catch (error: any) {
+            fileServingError(error);
           }
-
-          // parse templating for a limited list of mime types
-          if (
-            MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
-            !routeResponse.disableTemplating
-          ) {
-            readFile(filePath, (readError, data) => {
-              try {
-                if (readError) {
-                  fileErrorThrowOrFallback(readError);
-
-                  return;
-                }
-
-                const fileContent = TemplateParser(
-                  data.toString(),
-                  request,
-                  this.environment
-                );
-
-                response.body = fileContent;
-                response.send(fileContent);
-              } catch (error: any) {
-                fileServingError(error);
+        });
+      } else {
+        try {
+          response.body = BINARY_BODY;
+          const { size } = statSync(filePath);
+          this.setHeaders(
+            [
+              {
+                key: 'Content-Length',
+                value: size.toString()
               }
-            });
-          } else {
-            response.body = BINARY_BODY;
-            // use sendFile for better performances (streaming)
-            response.sendFile(filePath);
-          }
+            ],
+            response,
+            request
+          );
+          // use read stream for better performance
+          createReadStream(filePath).pipe(response);
         } catch (error: any) {
-          fileServingError(error);
+          errorThrowOrFallback(error);
         }
-      });
+      }
     } catch (error: any) {
       this.emit('error', ServerErrorCodes.ROUTE_SERVING_ERROR, error);
 
