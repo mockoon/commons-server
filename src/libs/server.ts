@@ -16,7 +16,7 @@ import {
 import cookieParser from 'cookie-parser';
 import { EventEmitter } from 'events';
 import express, { Application, NextFunction, Request, Response } from 'express';
-import { readFile, readFileSync } from 'fs';
+import { access, constants, readFile, readFileSync } from 'fs';
 import { createServer as httpCreateServer, Server as httpServer } from 'http';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import {
@@ -433,6 +433,26 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
     request: Request,
     response: Response
   ) {
+    const fileServingError = (error) => {
+      this.emit('error', ServerErrorCodes.ROUTE_FILE_SERVING_ERROR, error);
+
+      this.sendError(
+        response,
+        `${Texts.EN.MESSAGES.ROUTE_FILE_SERVING_ERROR}${error.message}`
+      );
+    };
+
+    const fileErrorThrowOrFallback = (error) => {
+      if (error && !routeResponse.fallbackTo404) {
+        throw error;
+      } else if (error && routeResponse.fallbackTo404) {
+        response.status(404);
+        this.serveBody(routeResponse, request, response);
+
+        return;
+      }
+    };
+
     try {
       let filePath = TemplateParser(
         routeResponse.filePath.replace(/\\/g, '/'),
@@ -445,18 +465,15 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
         this.options.environmentDirectory
       );
 
-      readFile(filePath, (readError, data) => {
+      const fileMimeType = mimeTypeLookup(filePath) || '';
+
+      access(filePath, constants.R_OK, (accessError) => {
         try {
-          if (readError && !routeResponse.fallbackTo404) {
-            throw readError;
-          } else if (readError && routeResponse.fallbackTo404) {
-            response.status(404);
-            this.serveBody(routeResponse, request, response);
+          if (accessError) {
+            fileErrorThrowOrFallback(accessError);
 
             return;
           }
-
-          const fileMimeType = mimeTypeLookup(filePath) || '';
 
           // set content-type to route response's one or the detected mime type if none
           if (!routeContentType) {
@@ -475,24 +492,33 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
             MimeTypesWithTemplating.indexOf(fileMimeType) > -1 &&
             !routeResponse.disableTemplating
           ) {
-            const fileContent = TemplateParser(
-              data.toString(),
-              request,
-              this.environment
-            );
-            response.body = fileContent;
-            response.send(fileContent);
+            readFile(filePath, (readError, data) => {
+              try {
+                if (readError) {
+                  fileErrorThrowOrFallback(readError);
+
+                  return;
+                }
+
+                const fileContent = TemplateParser(
+                  data.toString(),
+                  request,
+                  this.environment
+                );
+
+                response.body = fileContent;
+                response.send(fileContent);
+              } catch (error: any) {
+                fileServingError(error);
+              }
+            });
           } else {
             response.body = BINARY_BODY;
-            response.send(data);
+            // use sendFile for better performances (streaming)
+            response.sendFile(filePath);
           }
         } catch (error: any) {
-          this.emit('error', ServerErrorCodes.ROUTE_FILE_SERVING_ERROR, error);
-
-          this.sendError(
-            response,
-            `${Texts.EN.MESSAGES.ROUTE_FILE_SERVING_ERROR}${error.message}`
-          );
+          fileServingError(error);
         }
       });
     } catch (error: any) {
