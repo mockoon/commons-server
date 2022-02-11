@@ -120,13 +120,8 @@ export function CreateTransaction(
             value: request.params[paramName]
           }))
         : [],
-      query: requestUrl ? requestUrl.search.slice(1) : null,
-      queryParams: request.query
-        ? Object.keys(request.query).map((queryParamName) => ({
-            name: queryParamName,
-            value: request.query[queryParamName] as string
-          }))
-        : [],
+      query: requestUrl ? decodeURI(requestUrl.search.slice(1)) : null,
+      queryParams: request.query,
       body: request.body,
       headers: TransformHeaders(request.headers).sort(AscSort)
     },
