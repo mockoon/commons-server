@@ -107,10 +107,12 @@ export function CreateTransaction(
   request: Request,
   response: Response
 ): Transaction {
+  const requestUrl = new URL(request.originalUrl, 'http://localhost/');
+
   return {
     request: {
       method: request.method.toLowerCase() as keyof typeof Methods,
-      urlPath: new URL(request.originalUrl, 'http://localhost/').pathname,
+      urlPath: requestUrl.pathname,
       route: request.route ? request.route.path : null,
       params: request.params
         ? Object.keys(request.params).map((paramName) => ({
@@ -118,6 +120,7 @@ export function CreateTransaction(
             value: request.params[paramName]
           }))
         : [],
+      query: requestUrl ? requestUrl.search.slice(1) : null,
       queryParams: request.query
         ? Object.keys(request.query).map((queryParamName) => ({
             name: queryParamName,
