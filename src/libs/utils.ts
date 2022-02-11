@@ -1,4 +1,4 @@
-import { Header, Transaction } from '@mockoon/commons';
+import { Header, Methods, Transaction } from '@mockoon/commons';
 import { Request, Response } from 'express';
 import { SafeString } from 'handlebars';
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http';
@@ -108,7 +108,7 @@ export const CreateTransaction = (
   response: Response
 ): Transaction => ({
   request: {
-    method: request.method,
+    method: request.method.toLowerCase() as keyof typeof Methods,
     urlPath: new URL(request.originalUrl, 'http://localhost/').pathname,
     route: request.route ? request.route.path : null,
     params: request.params
