@@ -103,38 +103,38 @@ export const DecompressBody = (response: Response) => {
  * @param request
  * @param response
  */
-export const CreateTransaction = (
+export function CreateTransaction(
   request: Request,
   response: Response
-): Transaction => ({
-  request: {
-    method: request.method.toLowerCase() as keyof typeof Methods,
-    urlPath: new URL(request.originalUrl, 'http://localhost/').pathname,
-    route: request.route ? request.route.path : null,
-    params: request.params
-      ? Object.keys(request.params).map((paramName) => ({
-          name: paramName,
-          value: request.params[paramName]
-        }))
-      : [],
-    queryParams: request.query
-      ? Object.keys(request.query).map((queryParamName) => ({
-          name: queryParamName,
-          value: request.query[queryParamName] as string
-        }))
-      : [],
-    body: request.body,
-    headers: TransformHeaders(request.headers).sort(AscSort)
-  },
-  response: {
-    statusCode: response.statusCode,
-    headers: TransformHeaders(response.getHeaders()).sort(AscSort),
-    body: DecompressBody(response)
-  },
-  routeResponseUUID: response.routeResponseUUID,
-  routeUUID: response.routeUUID,
-  proxied: request.proxied || false
-});
+): Transaction {
+  const requestUrl = new URL(request.originalUrl, 'http://localhost/');
+
+  return {
+    request: {
+      method: request.method.toLowerCase() as keyof typeof Methods,
+      urlPath: requestUrl.pathname,
+      route: request.route ? request.route.path : null,
+      params: request.params
+        ? Object.keys(request.params).map((paramName) => ({
+            name: paramName,
+            value: request.params[paramName]
+          }))
+        : [],
+      query: requestUrl ? decodeURI(requestUrl.search.slice(1)) : null,
+      queryParams: request.query,
+      body: request.body,
+      headers: TransformHeaders(request.headers).sort(AscSort)
+    },
+    response: {
+      statusCode: response.statusCode,
+      headers: TransformHeaders(response.getHeaders()).sort(AscSort),
+      body: DecompressBody(response)
+    },
+    routeResponseUUID: response.routeResponseUUID,
+    routeUUID: response.routeUUID,
+    proxied: request.proxied || false
+  };
+}
 
 /**
  * Convert a string to base64
