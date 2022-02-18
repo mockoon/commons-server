@@ -248,7 +248,7 @@ describe('Template parser', () => {
       expect(parseResult).to.equals('2021-05-09T11:47:03');
     });
 
-    it('Should return a date time shifted by the requested amount when another template is used as the date source (safestring).', () => {
+    it('Should return a date time shifted by the requested amount when another helper is used as the date source (safestring).', () => {
       const parseResult = TemplateParser(
         "{{dateTimeShift date=(queryParam 'date') format=\"yyyy-MM-dd'T'HH:mm:ss\" hours=1}}",
         { query: { date: '2021-01-01 05:00:00' } } as any,
@@ -256,6 +256,16 @@ describe('Template parser', () => {
       );
 
       expect(parseResult).to.equals('2021-01-01T06:00:00');
+    });
+
+    it('Should return a date time shifted by the requested amount when another helper is used as the date and months and days source (safestring).', () => {
+      const parseResult = TemplateParser(
+        "{{dateTimeShift date=(queryParam 'date') format=\"yyyy-MM-dd\" days=(queryParam 'days') months=(queryParam 'months')}}",
+        { query: { date: '2021-01-01', months: 1, days: 1 } } as any,
+        {} as any
+      );
+
+      expect(parseResult).to.equals('2021-02-02');
     });
   });
 

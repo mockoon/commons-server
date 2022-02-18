@@ -3,7 +3,12 @@ import ObjectId from 'bson-objectid';
 import { format as dateFormat } from 'date-fns';
 import { HelperOptions, SafeString } from 'handlebars';
 import { EOL } from 'os';
-import { fromSafeString, RandomInt, ToBase64 } from '../utils';
+import {
+  fromSafeString,
+  numberFromSafeString,
+  RandomInt,
+  ToBase64
+} from '../utils';
 
 /**
  * Handlebars may insert its own `options` object as the last argument.
@@ -187,29 +192,30 @@ export const Helpers = {
         : date;
 
     if (typeof options === 'object' && options !== null && options.hash) {
-      if (typeof options.hash['days'] === 'number') {
-        dateToShift.setDate(dateToShift.getDate() + options.hash['days']);
+      const days = numberFromSafeString(options.hash['days']);
+      const months = numberFromSafeString(options.hash['months']);
+      const years = numberFromSafeString(options.hash['years']);
+      const hours = numberFromSafeString(options.hash['hours']);
+      const minutes = numberFromSafeString(options.hash['minutes']);
+      const seconds = numberFromSafeString(options.hash['seconds']);
+
+      if (!isNaN(days)) {
+        dateToShift.setDate(dateToShift.getDate() + days);
       }
-      if (typeof options.hash['months'] === 'number') {
-        dateToShift.setMonth(dateToShift.getMonth() + options.hash['months']);
+      if (!isNaN(months)) {
+        dateToShift.setMonth(dateToShift.getMonth() + months);
       }
-      if (typeof options.hash['years'] === 'number') {
-        dateToShift.setFullYear(
-          dateToShift.getFullYear() + options.hash['years']
-        );
+      if (!isNaN(years)) {
+        dateToShift.setFullYear(dateToShift.getFullYear() + years);
       }
-      if (typeof options.hash['hours'] === 'number') {
-        dateToShift.setHours(dateToShift.getHours() + options.hash['hours']);
+      if (!isNaN(hours)) {
+        dateToShift.setHours(dateToShift.getHours() + hours);
       }
-      if (typeof options.hash['minutes'] === 'number') {
-        dateToShift.setMinutes(
-          dateToShift.getMinutes() + options.hash['minutes']
-        );
+      if (!isNaN(minutes)) {
+        dateToShift.setMinutes(dateToShift.getMinutes() + minutes);
       }
-      if (typeof options.hash['seconds'] === 'number') {
-        dateToShift.setSeconds(
-          dateToShift.getSeconds() + options.hash['seconds']
-        );
+      if (!isNaN(seconds)) {
+        dateToShift.setSeconds(dateToShift.getSeconds() + seconds);
       }
     }
 

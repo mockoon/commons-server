@@ -163,6 +163,18 @@ export const fromSafeString = (text: string | SafeString) =>
   text instanceof SafeString ? text.toString() : text;
 
 /**
+ * Parse a number from a SafeString if needed.
+ *
+ * @param text
+ * @returns
+ */
+export const numberFromSafeString = (text: string | SafeString) => {
+  const parsedText = text instanceof SafeString ? text.toString() : text;
+
+  return parseInt(parsedText, 10);
+};
+
+/**
  * Resolve a file path relatively to the current environment folder if provided
  */
 export const resolvePathFromEnvironment = (
