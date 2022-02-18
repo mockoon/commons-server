@@ -30,17 +30,17 @@ export const RequestHelpers = function (
         return new SafeString(request.body);
       }
 
-      let requestToParse;
+      let source;
 
       if (request.parsedBody) {
-        requestToParse = request.parsedBody;
+        source = request.parsedBody;
       } else {
         return new SafeString(
           stringify ? JSON.stringify(defaultValue) : defaultValue
         );
       }
 
-      let value = objectGet(requestToParse, path);
+      let value = objectGet(source, path);
       value = value === undefined ? defaultValue : value;
 
       if (Array.isArray(value) || typeof value === 'object') {
@@ -49,7 +49,6 @@ export const RequestHelpers = function (
 
       return new SafeString(stringify ? JSON.stringify(value) : value);
     },
-
     // get the raw json property from body to use with each for example
     bodyRaw: function (...args: any[]) {
       let path = '';
@@ -62,23 +61,19 @@ export const RequestHelpers = function (
         path = parameters[0];
         defaultValue = parameters[1];
       }
-      // if no path has been provided we want the full raw body as is
-      if (!path) {
-        return request.body;
-      }
-
-      let requestToParse;
 
       if (request.parsedBody) {
-        requestToParse = request.parsedBody;
+        // if no path has been provided we want the full raw body as is
+        if (!path) {
+          return request.parsedBody;
+        }
+
+        const value = objectGet(request.parsedBody, path);
+
+        return value !== undefined ? value : defaultValue;
       } else {
         return defaultValue;
       }
-
-      let value = objectGet(requestToParse, path);
-      value = value === undefined ? defaultValue : value;
-
-      return value;
     },
 
     // use params from url /:param1/:param2
