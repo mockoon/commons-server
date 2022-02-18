@@ -126,6 +126,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('1');
     });
+
     it('should return an array without quotes', () => {
       const parseResult = TemplateParser(
         "{{bodyRaw 'prop'}}",
@@ -136,6 +137,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('1,2,3');
     });
+
     it('should return a boolean without quotes', () => {
       const parseResult = TemplateParser(
         "{{bodyRaw 'prop'}}",
@@ -146,6 +148,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('true');
     });
+
     it('should be usable with a each', () => {
       const parseResult = TemplateParser(
         "{{#each (bodyRaw 'myList')}}dolphin{{/each}}",
@@ -160,6 +163,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('dolphindolphindolphin');
     });
+
     it('should be usable within a if clause', () => {
       const parseResult = TemplateParser(
         "{{#if (bodyRaw 'boolean')}}dolphin{{/if}}",
@@ -174,6 +178,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('dolphin');
     });
+
     it('should return the default value in a each when no request body', () => {
       const parseResult = TemplateParser(
         "{{#each (bodyRaw 'dolphin' (array 1 2 3))}}dolphin{{/each}}",
@@ -182,6 +187,7 @@ describe('Template parser', () => {
       );
       expect(parseResult).to.be.equal('dolphindolphindolphin');
     });
+
     it('should return the default value in a if clause when no request body', () => {
       const parseResult = TemplateParser(
         "{{#if (bodyRaw 'dolphin' true)}}dolphin{{/if}}",
@@ -189,6 +195,17 @@ describe('Template parser', () => {
         {} as any
       );
       expect(parseResult).to.be.equal('dolphin');
+    });
+
+    it('should return the enumerated strings when body contains a root array and no path is provided', () => {
+      const parseResult = TemplateParser(
+        '{{#each (bodyRaw)}}{{this}}{{/each}}',
+        {
+          parsedBody: ['string1', 'string2']
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal('string1string2');
     });
   });
 
