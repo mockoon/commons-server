@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { EOL } from 'os';
 import { TemplateParser } from '../../../src/libs/template-parser';
 
 const requestMock = {
@@ -113,6 +114,28 @@ describe('Template parser', () => {
         '"This \\n is a \\"message\\" with quotes."'
       );
     });
+
+    it('should return the enumerated objects when body contains a root array and a number is passed as path', () => {
+      const parseResult = TemplateParser(
+        '{{#repeat 2}}{{body @index}}{{/repeat}}',
+        {
+          parsedBody: [
+            {
+              id: 1,
+              name: 'John'
+            },
+            {
+              id: 2,
+              name: 'Doe'
+            }
+          ]
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal(
+        `{"id":1,"name":"John"},${EOL}{"id":2,"name":"Doe"}${EOL}`
+      );
+    });
   });
 
   describe('Helper: bodyRaw', () => {
@@ -206,6 +229,17 @@ describe('Template parser', () => {
         {} as any
       );
       expect(parseResult).to.be.equal('string1string2');
+    });
+
+    it('should return the enumerated strings when body contains a root array and a number is passed as path', () => {
+      const parseResult = TemplateParser(
+        '{{#repeat 2}}{{bodyRaw @index}}{{/repeat}}',
+        {
+          parsedBody: ['string1', 'string2']
+        } as any,
+        {} as any
+      );
+      expect(parseResult).to.be.equal(`string1,${EOL}string2${EOL}`);
     });
   });
 
