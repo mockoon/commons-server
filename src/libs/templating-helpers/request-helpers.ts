@@ -26,7 +26,7 @@ export const RequestHelpers = function (
       }
 
       // if no path has been provided we want the full raw body as is
-      if (!path) {
+      if (path == null) {
         return new SafeString(request.body);
       }
 
@@ -64,7 +64,7 @@ export const RequestHelpers = function (
 
       if (request.parsedBody) {
         // if no path has been provided we want the full raw body as is
-        if (!path) {
+        if (path == null) {
           return request.parsedBody;
         }
 
