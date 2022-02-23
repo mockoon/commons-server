@@ -441,7 +441,7 @@ export const Helpers = {
       options.max = args[1];
     }
 
-    return faker.random.number(options);
+    return faker.datatype.number(options);
   },
   float: function (...args: any[]) {
     const options: { min?: number; max?: number; precision?: number } = {
@@ -456,7 +456,7 @@ export const Helpers = {
       options.max = args[1];
     }
 
-    return faker.random.number(options);
+    return faker.datatype.number(options);
   },
   date: function (...args: any[]) {
     let from, to, format;
@@ -509,7 +509,7 @@ export const Helpers = {
     return '';
   },
   boolean: function () {
-    return faker.random.boolean();
+    return faker.datatype.boolean();
   },
   title: function () {
     return faker.name.prefix();
@@ -564,12 +564,12 @@ export const Helpers = {
   },
   hexColor: function () {
     return Math.floor(
-      faker.random.number({ min: 0, max: 1, precision: Math.pow(10, -16) }) *
+      faker.datatype.number({ min: 0, max: 1, precision: Math.pow(10, -16) }) *
         16777215
     ).toString(16);
   },
   guid: function () {
-    return faker.random.uuid();
+    return faker.datatype.uuid();
   },
   ipv4: function () {
     return faker.internet.ip();

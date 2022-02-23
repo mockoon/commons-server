@@ -16,7 +16,7 @@ describe('Template parser: Faker wrapper', () => {
 
   it('should return value for helper with named parameters', () => {
     const parseResult = TemplateParser(
-      "{{faker 'random.number' min=10 max=20}}",
+      "{{faker 'datatype.number' min=10 max=20}}",
       {} as any,
       {} as any
     );
