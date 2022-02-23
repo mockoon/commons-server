@@ -8,7 +8,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         '{{#switch (body "prop1")}}{{#case "value1"}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
         {
-          parsedBody: { prop1: 'value1' }
+          body: { prop1: 'value1' }
         } as any,
         {} as any
       );
@@ -19,7 +19,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         '{{#switch (body "prop1")}}{{#case "value1"}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
         {
-          parsedBody: { prop1: 'defaultvalue' }
+          body: { prop1: 'defaultvalue' }
         } as any,
         {} as any
       );
@@ -39,7 +39,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         '{{#switch (bodyRaw "prop1")}}{{#case true}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
         {
-          parsedBody: { prop1: true }
+          body: { prop1: true }
         } as any,
         {} as any
       );
@@ -50,7 +50,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         '{{#switch (bodyRaw "prop1")}}{{#case true}}value1{{/case}}{{#default}}defaultvalue{{/default}}{{/switch}}',
         {
-          parsedBody: { prop1: false }
+          body: { prop1: false }
         } as any,
         {} as any
       );
@@ -80,7 +80,7 @@ describe('Template parser', () => {
     it('should concat two strings and the result of a helper', () => {
       const parseResult = TemplateParser(
         "{{#repeat 1 comma=false}}{{concat 'test' (body 'id') 'test'}}{{/repeat}}",
-        { parsedBody: { id: '123' } } as any,
+        { body: { id: '123' } } as any,
         {} as any
       );
       expect(parseResult).to.be.equal('test123test');
@@ -98,7 +98,7 @@ describe('Template parser', () => {
     it('should concat object path to retrieve body array items', () => {
       const parseResult = TemplateParser(
         "{{#repeat 2 comma=false}}item_{{body (concat 'a.' @index '.item')}}{{/repeat}}",
-        { parsedBody: { a: [{ item: 10 }, { item: 20 }] } } as any,
+        { body: { a: [{ item: 10 }, { item: 20 }] } } as any,
         {} as any
       );
       expect(parseResult).to.be.equal('item_10item_20');
@@ -128,7 +128,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{setVar 'testvar' (body 'uuid')}}{{testvar}}",
         {
-          parsedBody: { uuid: '0d35618e-5e85-4c09-864d-6d63973271c8' }
+          body: { uuid: '0d35618e-5e85-4c09-864d-6d63973271c8' }
         } as any,
         {} as any
       );
@@ -372,7 +372,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{substr (body 'prop1') (body 'prop2') (body 'prop3')}}",
         {
-          parsedBody: { prop1: 'testdata', prop2: 4, prop3: 4 }
+          body: { prop1: 'testdata', prop2: 4, prop3: 4 }
         } as any,
         {} as any
       );
@@ -384,7 +384,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{substr (body 'prop1') (body 'prop2') (body 'prop3')}}",
         {
-          parsedBody: { prop1: 'testdata', prop2: '4', prop3: '4' }
+          body: { prop1: 'testdata', prop2: '4', prop3: '4' }
         } as any,
         {} as any
       );
@@ -630,7 +630,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{indexOf (body 'prop1') (body 'prop2')}}",
         {
-          parsedBody: { prop1: 'First test then test', prop2: 'test' }
+          body: { prop1: 'First test then test', prop2: 'test' }
         } as any,
         {} as any
       );
@@ -642,7 +642,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{indexOf (body 'prop1') (body 'prop2') (body 'prop3')}}",
         {
-          parsedBody: {
+          body: {
             prop1: 'First test then test',
             prop2: 'test',
             prop3: 10
@@ -760,7 +760,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{base64 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -771,7 +771,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{#base64}}value: {{body 'prop1'}}{{/base64}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -808,7 +808,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{add 1 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -862,7 +862,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{subtract 1 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -916,7 +916,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{multiply 2 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -966,7 +966,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{divide 246 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '123' }
+          body: { prop1: '123' }
         } as any,
         {} as any
       );
@@ -1025,7 +1025,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         "{{modulo 4 (body 'prop1')}}",
         {
-          parsedBody: { prop1: '2' }
+          body: { prop1: '2' }
         } as any,
         {} as any
       );
@@ -1289,7 +1289,7 @@ describe('Template parser', () => {
       const parseResult = TemplateParser(
         '{{{stringify (bodyRaw "prop2")}}}',
         {
-          parsedBody: {
+          body: {
             prop1: '123',
             prop2: {
               data: 'super'

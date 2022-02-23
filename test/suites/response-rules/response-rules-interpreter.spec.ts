@@ -1354,6 +1354,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
+        stringBody: 'bodyvalue',
         body: 'bodyvalue'
       } as Request;
 
@@ -1389,6 +1390,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
+        stringBody: 'bodyvalue',
         body: 'bodyvalue'
       } as Request;
 
@@ -1424,6 +1426,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
+        stringBody: 'bodyvalue',
         body: 'bodyvalue'
       } as Request;
 
@@ -1459,8 +1462,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"name": "john"}',
-        parsedBody: { name: 'john' }
+        stringBody: '{"name": "john"}',
+        body: { name: 'john' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1495,8 +1498,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "user": [{ "name": "John" }] }',
-        parsedBody: { user: [{ name: 'John' }] }
+        stringBody: '{ "user": [{ "name": "John" }] }',
+        body: { user: [{ name: 'John' }] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1531,8 +1534,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "user": [{ "name": "John" }] }',
-        parsedBody: { user: [{ name: 'John' }] }
+        stringBody: '{ "user": [{ "name": "John" }] }',
+        body: { user: [{ name: 'John' }] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1567,8 +1570,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "users": ["John", "Johnny", "Paul"] }',
-        parsedBody: { users: ['John', 'Johnny', 'Paul'] }
+        stringBody: '{ "users": ["John", "Johnny", "Paul"] }',
+        body: { users: ['John', 'Johnny', 'Paul'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1603,8 +1606,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "users": ["John", "Johnny", "Paul"] }',
-        parsedBody: { users: ['John', 'Johnny', 'Paul'] }
+        stringBody: '{ "users": ["John", "Johnny", "Paul"] }',
+        body: { users: ['John', 'Johnny', 'Paul'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1639,8 +1642,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "test" }',
-        parsedBody: { test: 'test' }
+        stringBody: '{ "test": "test" }',
+        body: { test: 'test' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1675,8 +1678,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": 1 }',
-        parsedBody: { test: 1 }
+        stringBody: '{ "test": 1 }',
+        body: { test: 1 }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1711,8 +1714,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": false }',
-        parsedBody: { test: false }
+        stringBody: '{ "test": false }',
+        body: { test: false }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1747,8 +1750,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'param1=value1',
-        parsedBody: { param1: 'value1' }
+        stringBody: 'param1=value1',
+        body: { param1: 'value1' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1783,8 +1786,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'param1=value1',
-        parsedBody: { param1: 'value1' }
+        stringBody: 'param1=value1',
+        body: { param1: 'value1' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1819,8 +1822,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'params[]=value1&params[]=value2',
-        parsedBody: { params: ['value1', 'value2'] }
+        stringBody: 'params[]=value1&params[]=value2',
+        body: { params: ['value1', 'value2'] }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1855,8 +1858,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: 'params[prop1]=value1&params[prop2]=value2',
-        parsedBody: { params: { prop1: 'value1', prop2: 'value2' } }
+        stringBody: 'params[prop1]=value1&params[prop2]=value2',
+        body: { params: { prop1: 'value1', prop2: 'value2' } }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1891,6 +1894,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
+        stringBody: 'bodyvalue',
         body: 'bodyvalue'
       } as Request;
 
@@ -1926,6 +1930,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
+        stringBody: 'bodyvalue',
         body: 'bodyvalue'
       } as Request;
 
@@ -1961,8 +1966,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"prop1": null}',
-        parsedBody: { prop1: null }
+        stringBody: '{"prop1": null}',
+        body: { prop1: null }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -1997,8 +2002,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{"prop1": null}',
-        parsedBody: { prop1: null }
+        stringBody: '{"prop1": null}',
+        body: { prop1: null }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2034,8 +2039,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: xmlBody,
-        parsedBody: xml2js(xmlBody, { compact: true })
+        stringBody: xmlBody,
+        body: xml2js(xmlBody, { compact: true })
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2071,8 +2076,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: xmlBody,
-        parsedBody: xml2js(xmlBody, { compact: true })
+        stringBody: xmlBody,
+        body: xml2js(xmlBody, { compact: true })
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2108,8 +2113,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: xmlBody,
-        parsedBody: xml2js(xmlBody, { compact: true })
+        stringBody: xmlBody,
+        body: xml2js(xmlBody, { compact: true })
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2146,8 +2151,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }',
-        parsedBody: { test: 'bodyvalue' }
+        stringBody: '{ "test": "bodyvalue" }',
+        body: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2190,7 +2195,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }'
+        stringBody: '{ "test": "bodyvalue" }'
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2233,8 +2238,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }',
-        parsedBody: { test: 'bodyvalue' }
+        stringBody: '{ "test": "bodyvalue" }',
+        body: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2277,7 +2282,7 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "empty" }'
+        stringBody: '{ "test": "empty" }'
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(
@@ -2325,8 +2330,8 @@ describe('Response rules interpreter', () => {
 
           return headers[headerName];
         },
-        body: '{ "test": "bodyvalue" }',
-        parsedBody: { test: 'bodyvalue' }
+        stringBody: '{ "test": "bodyvalue" }',
+        body: { test: 'bodyvalue' }
       } as Request;
 
       const routeResponse = new ResponseRulesInterpreter(

@@ -2,8 +2,9 @@
 declare namespace Express {
   export interface Request {
     proxied: boolean;
+    body: any;
     rawBody: Buffer;
-    parsedBody: any;
+    stringBody: string;
   }
   export interface Response {
     body: any;
@@ -18,8 +19,9 @@ declare module 'http' {
   }
   export interface IncomingMessage {
     proxied: boolean;
+    body: any;
     rawBody: Buffer;
-    parsedBody: any;
+    stringBody: string;
   }
   export interface ServerResponse {
     body: any;

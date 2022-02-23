@@ -153,7 +153,7 @@ export class ResponseRulesInterpreter {
         requestContentType.includes('application/xml') ||
         requestContentType.includes('text/xml')
       ) {
-        body = this.request.parsedBody;
+        body = this.request.body;
       }
     }
 
@@ -161,7 +161,7 @@ export class ResponseRulesInterpreter {
       body,
       query: this.request.query,
       params: this.request.params,
-      bodyRaw: this.request.body.toString()
+      bodyRaw: this.request.stringBody
     };
   }
 }

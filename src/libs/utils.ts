@@ -122,7 +122,7 @@ export function CreateTransaction(
         : [],
       query: requestUrl ? decodeURI(requestUrl.search.slice(1)) : null,
       queryParams: request.query,
-      body: request.body,
+      body: request.stringBody,
       headers: TransformHeaders(request.headers).sort(AscSort)
     },
     response: {

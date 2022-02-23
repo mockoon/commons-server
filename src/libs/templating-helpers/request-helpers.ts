@@ -31,13 +31,13 @@ export const RequestHelpers = function (
 
       // if no path has been provided we want the full raw body as is
       if (path == null || path === '') {
-        return new SafeString(request.body);
+        return new SafeString(request.stringBody);
       }
 
       let source;
 
-      if (request.parsedBody) {
-        source = request.parsedBody;
+      if (request.body) {
+        source = request.body;
       } else {
         return new SafeString(
           stringify ? JSON.stringify(defaultValue) : defaultValue
@@ -66,13 +66,13 @@ export const RequestHelpers = function (
         defaultValue = parameters[1];
       }
 
-      if (request.parsedBody) {
+      if (request.body) {
         // if no path has been provided we want the full raw body as is
         if (path == null || path === '') {
-          return request.parsedBody;
+          return request.body;
         }
 
-        const value = objectGet(request.parsedBody, path);
+        const value = objectGet(request.body, path);
 
         return value !== undefined ? value : defaultValue;
       } else {

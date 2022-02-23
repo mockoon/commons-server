@@ -30,11 +30,11 @@ import { parse as qsParse } from 'qs';
 import { SecureContextOptions } from 'tls';
 import TypedEmitter from 'typed-emitter';
 import { xml2js } from 'xml-js';
-import { DefaultTLSOptions } from '../constants/ssl.constants';
-import { Texts } from '../i18n/en';
-import { ResponseRulesInterpreter } from './response-rules-interpreter';
-import { TemplateParser } from './template-parser';
-import { CreateTransaction, resolvePathFromEnvironment } from './utils';
+import { DefaultTLSOptions } from '../../constants/ssl.constants';
+import { Texts } from '../../i18n/en';
+import { ResponseRulesInterpreter } from '../response-rules-interpreter';
+import { TemplateParser } from '../template-parser';
+import { CreateTransaction, resolvePathFromEnvironment } from '../utils';
 
 /**
  * Create a server instance from an Environment object.
@@ -217,23 +217,23 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
     request.on('end', () => {
       request.rawBody = Buffer.concat(rawBody);
-      request.body = request.rawBody.toString('utf8');
+      request.stringBody = request.rawBody.toString('utf8');
 
       try {
         if (requestContentType) {
           if (requestContentType.includes('application/json')) {
-            request.parsedBody = JSON.parse(request.body);
+            request.body = JSON.parse(request.stringBody);
           } else if (
             requestContentType.includes('application/x-www-form-urlencoded')
           ) {
-            request.parsedBody = qsParse(request.body, {
+            request.body = qsParse(request.stringBody, {
               depth: 10
             });
           } else if (
             requestContentType.includes('application/xml') ||
             requestContentType.includes('text/xml')
           ) {
-            request.parsedBody = xml2js(request.body, {
+            request.body = xml2js(request.stringBody, {
               compact: true
             });
           }
@@ -300,78 +300,7 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
 
           routePath = routePath.replace(/\/{2,}/g, '/');
 
-          let requestNumber = 1;
-
-          // create route
-          server[declaredRoute.method](
-            routePath,
-            (request: Request, response: Response) => {
-              // refresh environment data to get route changes that do not require a restart (headers, body, etc)
-              this.refreshEnvironment();
-              const currentRoute = this.getRefreshedRoute(declaredRoute);
-
-              if (!currentRoute) {
-                this.sendError(
-                  response,
-                  Texts.EN.MESSAGES.ROUTE_NO_LONGER_EXISTS,
-                  404
-                );
-
-                return;
-              }
-
-              const enabledRouteResponse = new ResponseRulesInterpreter(
-                currentRoute.responses,
-                request,
-                currentRoute.randomResponse,
-                currentRoute.sequentialResponse
-              ).chooseResponse(requestNumber);
-
-              requestNumber += 1;
-
-              // save route and response UUIDs for logs (only in desktop app)
-              if (declaredRoute.uuid && enabledRouteResponse.uuid) {
-                response.routeUUID = declaredRoute.uuid;
-                response.routeResponseUUID = enabledRouteResponse.uuid;
-              }
-
-              // add route latency if any
-              setTimeout(() => {
-                const contentType = GetRouteResponseContentType(
-                  this.environment,
-                  enabledRouteResponse
-                );
-                const routeContentType = GetContentType(
-                  enabledRouteResponse.headers
-                );
-
-                // set http code
-                response.status(enabledRouteResponse.statusCode);
-
-                this.setHeaders(
-                  enabledRouteResponse.headers,
-                  response,
-                  request
-                );
-
-                // send the file
-                if (enabledRouteResponse.filePath) {
-                  this.sendFile(
-                    enabledRouteResponse,
-                    routeContentType,
-                    request,
-                    response
-                  );
-                } else {
-                  if (contentType.includes('application/json')) {
-                    response.set('Content-Type', 'application/json');
-                  }
-
-                  this.serveBody(enabledRouteResponse, request, response);
-                }
-              }, enabledRouteResponse.latency);
-            }
-          );
+          this.createRESTRoute(server, declaredRoute, routePath);
         } catch (error: any) {
           let errorCode = ServerErrorCodes.ROUTE_CREATION_ERROR;
 
@@ -383,6 +312,79 @@ export class MockoonServer extends (EventEmitter as new () => TypedEmitter<Serve
           this.emit('error', errorCode, error);
         }
       }
+    });
+  }
+
+  /**
+   * Create a regular REST route (GET, POST, etc.)
+   *
+   * @param server
+   * @param route
+   * @param routePath
+   * @param requestNumber
+   */
+  private createRESTRoute(
+    server: Application,
+    route: Route,
+    routePath: string
+  ) {
+    let requestNumber = 1;
+
+    server[route.method](routePath, (request: Request, response: Response) => {
+      // refresh environment data to get route changes that do not require a restart (headers, body, etc)
+      this.refreshEnvironment();
+      const currentRoute = this.getRefreshedRoute(route);
+
+      if (!currentRoute) {
+        this.sendError(response, Texts.EN.MESSAGES.ROUTE_NO_LONGER_EXISTS, 404);
+
+        return;
+      }
+
+      const enabledRouteResponse = new ResponseRulesInterpreter(
+        currentRoute.responses,
+        request,
+        currentRoute.randomResponse,
+        currentRoute.sequentialResponse
+      ).chooseResponse(requestNumber);
+
+      requestNumber += 1;
+
+      // save route and response UUIDs for logs (only in desktop app)
+      if (route.uuid && enabledRouteResponse.uuid) {
+        response.routeUUID = route.uuid;
+        response.routeResponseUUID = enabledRouteResponse.uuid;
+      }
+
+      // add route latency if any
+      setTimeout(() => {
+        const contentType = GetRouteResponseContentType(
+          this.environment,
+          enabledRouteResponse
+        );
+        const routeContentType = GetContentType(enabledRouteResponse.headers);
+
+        // set http code
+        response.status(enabledRouteResponse.statusCode);
+
+        this.setHeaders(enabledRouteResponse.headers, response, request);
+
+        // send the file
+        if (enabledRouteResponse.filePath) {
+          this.sendFile(
+            enabledRouteResponse,
+            routeContentType,
+            request,
+            response
+          );
+        } else {
+          if (contentType.includes('application/json')) {
+            response.set('Content-Type', 'application/json');
+          }
+
+          this.serveBody(enabledRouteResponse, request, response);
+        }
+      }, enabledRouteResponse.latency);
     });
   }
 
