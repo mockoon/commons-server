@@ -9,10 +9,14 @@ export const RequestHelpers = function (
 ) {
   return {
     // get json property from body
-    body: function (path: string, defaultValue: string, stringify: boolean) {
+    body: function (
+      path: string | null,
+      defaultValue: string,
+      stringify: boolean
+    ) {
       // no path provided
       if (typeof path === 'object') {
-        path = '';
+        path = null;
       }
 
       // no default value provided
@@ -26,7 +30,7 @@ export const RequestHelpers = function (
       }
 
       // if no path has been provided we want the full raw body as is
-      if (path == null) {
+      if (path == null || path === '') {
         return new SafeString(request.body);
       }
 
@@ -51,7 +55,7 @@ export const RequestHelpers = function (
     },
     // get the raw json property from body to use with each for example
     bodyRaw: function (...args: any[]) {
-      let path = '';
+      let path: string | null = null;
       let defaultValue = '';
       const parameters = args.slice(0, -1); // remove last item (handlebars options argument)
 
@@ -64,7 +68,7 @@ export const RequestHelpers = function (
 
       if (request.parsedBody) {
         // if no path has been provided we want the full raw body as is
-        if (path == null) {
+        if (path == null || path === '') {
           return request.parsedBody;
         }
 
